@@ -1,0 +1,7 @@
+/local/
+/vendor/
+cpanfile.snapshot
+
+# Editor configs (VSCode config is tracked as LSP setup example)
+.nvim.lua
+/.zed/

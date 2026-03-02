@@ -1,0 +1,9 @@
+{
+  "perlnavigator.perlPath": "perl",
+  "perlnavigator.includePaths": ["lib", "local/lib/perl5"],
+  "perlnavigator.enableWarnings": true,
+  "perlnavigator.perlcriticEnabled": false,
+  "perlnavigator.perlEnv": {
+    "TYPIST_CHECK_QUIET": "1"
+  }
+}
