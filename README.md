@@ -9,7 +9,8 @@ Features exercised: newtypes, structs, ADTs, parametric ADTs, GADTs, enums, lite
 Requires Perl 5.40+ and [cpanm](https://metacpan.org/pod/App::cpanminus).
 
 ```
-mise run setup     # cpanm -L local https://github.com/cwd-k2/typist.git
+mise run setup         # install from GitHub
+mise run setup-local   # or copy from ../typist (local development)
 ```
 
 ## Run
@@ -62,40 +63,47 @@ lib/Shop/
 
 ## Known Type Limitations
 
-The static checker (`mise run verify`) passes with 0 diagnostics. The runtime
-CHECK-phase checker (`use Typist`) reports some diagnostics that stem from
-Typist's current type inference limitations. These are suppressed at runtime
-via `TYPIST_CHECK_QUIET=1`.
+Typist has two checking layers:
+
+1. **Static** (`typist-check` / `mise run verify`) — PPI-based analysis at
+   the file level. This project passes with **0 diagnostics** across 19 files.
+2. **Runtime CHECK-phase** (`use Typist`) — runs at compile time within each
+   package's `import()`. Currently reports 20 diagnostics due to the
+   limitations described below. Suppressed via `TYPIST_CHECK_QUIET=1` in
+   `mise run run`.
 
 ### IO Effect
 
 `IO` is a standard effect label registered by Typist's Prelude. The static
-checker (`typist-check`) recognizes it automatically. However the runtime
-CHECK-phase checker resolves effects within the package's own registry and
-does not see Prelude labels. `Shop::Types` therefore re-declares
-`effect IO => +{}` to satisfy both checkers.
+checker recognizes it automatically. However the runtime CHECK-phase checker
+resolves effects within the package's own registry and does not see Prelude
+labels. `Shop::Types` therefore re-declares `effect IO => +{}` to satisfy
+both checkers.
 
 ### ArrayRef Literal Inference
 
 Array literals `[...]` are inferred as `ArrayRef[Any]` by the runtime checker.
 Even with explicit `:sig(ArrayRef[OrderItem])` annotations on variables,
-the literal's element types are not propagated. This affects `script/app.pl`
-where `OrderItem` arrays are constructed inline.
+the literal's element types are not propagated. This produces 5 diagnostics
+in `script/app.pl` where `OrderItem` arrays are constructed inline, plus
+4 in the Traversable demo section where `Result`/`Option` arrays are built.
 
 ### Parametric Type Variable Resolution
 
 Functions with parametric signatures (e.g., `<A>(Option[A]) -> A`) return
-the type variable `A` rather than the concrete type at the call site. This
-causes mismatches like `Option[T][Product]` vs `Option[A]` or `ArrayRef[A]`
-vs `ArrayRef[Order]`. Affected call sites use `@typist-ignore` comments
-in the static checker.
+the type variable `A` rather than the concrete type at the call site. The
+runtime checker reports mismatches such as `Option[T][Product]` vs `Option[A]`
+when calling `show_option`, `option_to_list`, `option_or`, etc. Affected call
+sites use `# @typist-ignore` comments to suppress the corresponding static
+diagnostics.
 
 ### Curried Function Types
 
-Higher-order functions that return curried closures (e.g., `sub ($a) { sub ($b) { ... } }`)
-cannot be typed within `:sig()` annotations because Typist does not support
-`CodeRef` in `:sig()` — only in typeclass definition strings. Functions like
-`validation_lift_a2`, `lift_a2_result`, and the monadic core operations of
-Reader/State/Writer are affected. Their `:sig()` annotations describe the
-outer function but `@typist-ignore` suppresses diagnostics on the inner
-curried application.
+Higher-order functions that return curried closures
+(e.g., `sub ($a) { sub ($b) { ... } }`) cannot be fully typed within `:sig()`
+annotations because Typist does not support `CodeRef` in `:sig()` — only in
+typeclass definition strings. Functions like `validation_lift_a2`,
+`lift_a2_result`, and the monadic core operations of Reader/State/Writer are
+affected. Their `:sig()` annotations describe the outer function signature
+while `# @typist-ignore` suppresses diagnostics on the inner curried
+application.

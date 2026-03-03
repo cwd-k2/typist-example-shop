@@ -2,6 +2,10 @@
 description = "Install Typist from GitHub"
 run = "cpanm -nq -L local https://github.com/cwd-k2/typist.git"
 
+[tasks."setup-local"]
+description = "Install Typist from local sibling directory (../typist)"
+run = "cp -R ../typist/lib/Typist* local/lib/perl5/ && cp ../typist/bin/typist-check local/bin/"
+
 [tasks.run]
 description = "Run the shop application"
 run = "TYPIST_CHECK_QUIET=1 perl -Ilocal/lib/perl5 -Ilib script/app.pl"
