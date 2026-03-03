@@ -65,16 +65,15 @@ lib/Shop/
 
 Both checking layers — static (`typist-check`) and runtime CHECK-phase
 (`use Typist`) — pass with **0 diagnostics** and **0 `@typist-ignore`
-suppressions**. 7 named functions remain unannotated due to structural
+suppressions**. 5 named functions remain unannotated due to structural
 limitations of `:sig()`.
 
-### Unannotated Functions (7)
+### Unannotated Functions (5)
 
 | Function | Reason |
 |---|---|
 | `Store::*_handler` (4) | Returns `+{...}` HashRef — no HashRef type in `:sig()` |
 | `Display::logger_handler` | Same — returns handler HashRef |
-| `Codensity::unit`, `bind` | Parametric in functor `F: * -> *` — HKT variables only in `typeclass` |
 
 ### Pair[A, B] Tuple Type
 

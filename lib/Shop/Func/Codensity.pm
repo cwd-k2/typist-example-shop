@@ -19,18 +19,14 @@ use Shop::Func::HKT;
 # ═══════════════════════════════════════════════════
 
 # ── Core Operations ───────────────────────────
-#
-# unit and bind are parametric in the functor F, which cannot be
-# expressed in :sig() (no HKT variable outside typeclass context).
-# Type signatures are given in comments.
 
 # unit : A -> Codensity F A
-sub unit ($a) {
+sub unit :sig(<F: * -> *, A>(A) -> forall R. (A -> F[R]) -> F[R]) ($a) {
     sub ($k) { $k->($a) };
 }
 
 # bind : Codensity F A -> (A -> Codensity F B) -> Codensity F B
-sub bind ($m, $f) {
+sub bind :sig(<F: * -> *, A, B>(forall R. (A -> F[R]) -> F[R], (A) -> forall R. (B -> F[R]) -> F[R]) -> forall R. (B -> F[R]) -> F[R]) ($m, $f) {
     sub ($k) { $m->(sub ($a) { $f->($a)->($k) }) };
 }
 
