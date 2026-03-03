@@ -8,7 +8,7 @@ run = "cp -R ../typist/lib/Typist* local/lib/perl5/ && cp ../typist/bin/typist-c
 
 [tasks.run]
 description = "Run the shop application"
-run = "TYPIST_CHECK_QUIET=1 perl -Ilocal/lib/perl5 -Ilib script/app.pl"
+run = "perl -Ilocal/lib/perl5 -Ilib script/app.pl"
 
 [tasks.verify]
 description = "Verify types (0 diagnostics expected)"

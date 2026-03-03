@@ -63,47 +63,47 @@ lib/Shop/
 
 ## Known Type Limitations
 
-Typist has two checking layers:
+Both checking layers — static (`typist-check`) and runtime CHECK-phase
+(`use Typist`) — pass with **0 diagnostics**. 19 call sites use
+`# @typist-ignore` to suppress static diagnostics that arise from inference
+limitations rather than actual type errors.
 
-1. **Static** (`typist-check` / `mise run verify`) — PPI-based analysis at
-   the file level. This project passes with **0 diagnostics** across 19 files.
-2. **Runtime CHECK-phase** (`use Typist`) — runs at compile time within each
-   package's `import()`. Currently reports 20 diagnostics due to the
-   limitations described below. Suppressed via `TYPIST_CHECK_QUIET=1` in
-   `mise run run`.
+### match Implicit Return → Result[Any] (5 sites)
 
-### IO Effect
+When a `match` expression returns `Ok(...)` in one branch and `Err(...)` in
+another, the static checker infers `Result[Any]` instead of the declared
+concrete `Result[T]`. Affects `upgrade_to_premium`, `confirm_order`,
+`fulfill_order`, `cancel_order`, and `refund_payment`.
 
-`IO` is a standard effect label registered by Typist's Prelude. The static
-checker recognizes it automatically. However the runtime CHECK-phase checker
-resolves effects within the package's own registry and does not see Prelude
-labels. `Shop::Types` therefore re-declares `effect IO => +{}` to satisfy
-both checkers.
+### Functor::fmap → F[Any] (3 sites)
 
-### ArrayRef Literal Inference
+Typeclass dispatch through `Functor::fmap` returns the parametric `F[Any]`
+rather than the concrete `ArrayRef[Int]`. Downstream consumers like
+`fold_sum` and `cat_results` then report a type mismatch.
 
-Array literals `[...]` are inferred as `ArrayRef[Any]` by the runtime checker.
-Even with explicit `:sig(ArrayRef[OrderItem])` annotations on variables,
-the literal's element types are not propagated. This produces 5 diagnostics
-in `script/app.pl` where `OrderItem` arrays are constructed inline, plus
-4 in the Traversable demo section where `Result`/`Option` arrays are built.
+### Array Literal Inference (4 sites)
 
-### Parametric Type Variable Resolution
+Array literals `[map { ... } @$arr]` and spread expressions
+`[@{$arr}, $item]` are inferred as `ArrayRef[Any]`. Affects `traverse_result`,
+`traverse_option`, `filter_map`, and `add_to_cart`.
 
-Functions with parametric signatures (e.g., `<A>(Option[A]) -> A`) return
-the type variable `A` rather than the concrete type at the call site. The
-runtime checker reports mismatches such as `Option[T][Product]` vs `Option[A]`
-when calling `show_option`, `option_to_list`, `option_or`, etc. Affected call
-sites use `# @typist-ignore` comments to suppress the corresponding static
-diagnostics.
+### Curried Closure Types (4 sites)
 
-### Curried Function Types
+Higher-order functions that build curried closures
+(`sub ($a) { sub ($b) { ... } }`) produce `Result[B]` or `Validation[E, B]`
+where the checker expects `Result[(A)->B]` or `Validation[E, (A)->B]`.
+Affects `lift_a2_result`, `validation_lift_a2`, and `validation_lift_a3`.
 
-Higher-order functions that return curried closures
-(e.g., `sub ($a) { sub ($b) { ... } }`) cannot be fully typed within `:sig()`
-annotations because Typist does not support `CodeRef` in `:sig()` — only in
-typeclass definition strings. Functions like `validation_lift_a2`,
-`lift_a2_result`, and the monadic core operations of Reader/State/Writer are
-affected. Their `:sig()` annotations describe the outer function signature
-while `# @typist-ignore` suppresses diagnostics on the inner curried
-application.
+### Other (3 sites)
+
+- `cat_results` returns `ArrayRef[A]` (parametric) vs declared `ArrayRef[Order]`
+- `option_or` returns `Quantity` (from fmap context) vs declared `Bool`
+- Ternary chain widens literal union `0|5|10|15|20` to `Int`
+
+### Codensity Core (unannotated)
+
+`unit` and `bind` in `Shop::Func::Codensity` are parametric in the functor
+`F`, which cannot be expressed in `:sig()` — HKT type variables (`F: * -> *`)
+are only available inside `typeclass` definitions. The specializations
+(`lift_list`/`lower_list`, `lift_option`/`lower_option`) carry full `:sig()`
+annotations using `forall R` for the continuation parameter.

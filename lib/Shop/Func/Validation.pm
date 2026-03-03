@@ -46,7 +46,7 @@ sub validation_ap :sig(<E, A, B>(Validation[E, (A) -> B], Validation[E, A]) -> V
 # ── Lifted application ────────────────────────
 
 sub validation_lift_a2 :sig(<E, A, B, C>((A, B) -> C, Validation[E, A], Validation[E, B]) -> Validation[E, C]) ($f, $va, $vb) {
-    # @typist-ignore — curried closure: validation_fmap returns Validation[E, B] in checker
+    # @typist-ignore — curried closure: validation_fmap returns Validation[E, B], not Validation[E, (A)->B]
     validation_ap(validation_fmap($va, sub ($a) { sub ($b) { $f->($a, $b) } }), $vb);
 }
 

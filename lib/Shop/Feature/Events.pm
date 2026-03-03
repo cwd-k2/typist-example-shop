@@ -23,7 +23,6 @@ sub process_refund_event :sig((Order, Price) -> Price) ($order, $amount) {
     $amount;
 }
 
-# @typist-ignore — option_or parametric type variable resolution
 sub process_stock_event :sig((ProductId) -> Quantity ![ProductStore]) ($product_id) {
     my $opt = Shop::Domain::Inventory::find_product($product_id);
     Shop::Func::HKT::option_or(

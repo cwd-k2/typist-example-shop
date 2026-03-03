@@ -41,10 +41,9 @@ sub refund_payment :sig((OrderId, Price) -> Result[PaymentStatus] ![Logger, Paym
     my $key = $order_id->base;
     my $opt = PaymentStore::get_payment($order_id);
 
-    # @typist-ignore — nested match Result free var
+    # @typist-ignore — nested match implicit return: Result[Any] vs Result[PaymentStatus]
     match $opt,
         Some => sub ($status) {
-            # @typist-ignore — Err<T> free var T unresolvable without expected-type propagation
             match $status,
                 Completed => sub () {
                     PaymentStore::put_payment($order_id, Refunded());

@@ -18,10 +18,11 @@ use Shop::Func::HKT;
 #  concat-heavy binds into O(n).
 # ═══════════════════════════════════════════════════
 
-# @typist-ignore — Codensity representation (forall R. (A -> F R) -> F R)
-#   exceeds :sig() expressiveness for rank-2 continuation types.
-
 # ── Core Operations ───────────────────────────
+#
+# unit and bind are parametric in the functor F, which cannot be
+# expressed in :sig() (no HKT variable outside typeclass context).
+# Type signatures are given in comments.
 
 # unit : A -> Codensity F A
 sub unit ($a) {
@@ -37,25 +38,21 @@ sub bind ($m, $f) {
 
 my $list_bind = \&Monad::bind;
 
-# lift_list : ArrayRef[A] -> Codensity ArrayRef A
-sub lift_list ($arr) {
+sub lift_list :sig(<A>(ArrayRef[A]) -> forall R. (A -> ArrayRef[R]) -> ArrayRef[R]) ($arr) {
     sub ($k) { $list_bind->($arr, $k) };
 }
 
-# lower_list : Codensity ArrayRef A -> ArrayRef[A]
-sub lower_list ($m) {
+sub lower_list :sig(<A>(forall R. (A -> ArrayRef[R]) -> ArrayRef[R]) -> ArrayRef[A]) ($m) {
     $m->(sub ($a) { [$a] });
 }
 
 # ── Option Specialization ─────────────────────
 
-# lift_option : Option[A] -> Codensity Option A
-sub lift_option ($opt) {
+sub lift_option :sig(<A>(Option[A]) -> forall R. (A -> Option[R]) -> Option[R]) ($opt) {
     sub ($k) { Shop::Func::HKT::option_bind($opt, $k) };
 }
 
-# lower_option : Codensity Option A -> Option[A]
-sub lower_option ($m) {
+sub lower_option :sig(<A>(forall R. (A -> Option[R]) -> Option[R]) -> Option[A]) ($m) {
     $m->(sub ($a) { Some($a) });
 }
 

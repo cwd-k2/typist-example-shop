@@ -37,7 +37,7 @@ sub create_order :sig((OrderId, CustomerId, ArrayRef[OrderItem], DiscountPct) ->
 
 sub confirm_order :sig((OrderId) -> Result[Order] ![Logger, OrderStore, ProductStore]) ($id) {
     my $opt = OrderStore::get_order($id);
-    # @typist-ignore — Result free var
+    # @typist-ignore — match implicit return: Result[Any] vs Result[Order]
     match $opt,
         Some => sub ($order) {
             my $key = $id->base;
@@ -69,7 +69,7 @@ sub confirm_order :sig((OrderId) -> Result[Order] ![Logger, OrderStore, ProductS
 
 sub fulfill_order :sig((OrderId) -> Result[Order] ![Logger, OrderStore]) ($id) {
     my $opt = OrderStore::get_order($id);
-    # @typist-ignore — Result free var
+    # @typist-ignore — match implicit return: Result[Any] vs Result[Order]
     match $opt,
         Some => sub ($order) {
             my $key = $id->base;
@@ -87,7 +87,7 @@ sub fulfill_order :sig((OrderId) -> Result[Order] ![Logger, OrderStore]) ($id) {
 
 sub cancel_order :sig((OrderId, Str) -> Result[Order] ![Logger, OrderStore]) ($id, $reason) {
     my $opt = OrderStore::get_order($id);
-    # @typist-ignore — Result free var
+    # @typist-ignore — match implicit return: Result[Any] vs Result[Order]
     match $opt,
         Some => sub ($order) {
             my $key = $id->base;
@@ -130,7 +130,7 @@ sub process_results :sig((ArrayRef[Result[Order]]) -> ArrayRef[Order] ![Logger])
             Ok  => sub ($order) { },
             Err => sub ($msg)   { Logger::log(Warn(), "Skipped: $msg") };
     }
-    # @typist-ignore — cat_results parametric ArrayRef[A] → ArrayRef[Order]
+    # @typist-ignore — cat_results returns ArrayRef[A], not ArrayRef[Order]
     $ok_orders;
 }
 

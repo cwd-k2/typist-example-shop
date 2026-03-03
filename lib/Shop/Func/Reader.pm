@@ -89,7 +89,6 @@ sub format_price :sig((Price) -> (ShopConfig) -> Str) ($price) {
 }
 
 # order_total_with_tax_and_shipping : Price -> Reader ShopConfig Price
-# @typist-ignore — returns nested reader_bind composition
 sub order_total_with_tax_and_shipping ($subtotal) {
     reader_bind(price_with_tax($subtotal), sub ($with_tax) {
         reader_bind(shipping_cost($subtotal), sub ($shipping) {

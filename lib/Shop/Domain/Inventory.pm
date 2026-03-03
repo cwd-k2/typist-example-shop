@@ -24,7 +24,7 @@ sub find_product :sig((ProductId) -> Option[Product] ![ProductStore]) ($id) {
 
 sub in_stock :sig((ProductId, Quantity) -> Bool ![ProductStore]) ($id, $qty) {
     my $opt = ProductStore::get_product($id);
-    # @typist-ignore — option_or parametric type variable resolution
+    # @typist-ignore — option_or returns Quantity (from fmap context), not Bool
     Shop::Func::HKT::option_or(
         Shop::Func::HKT::option_fmap($opt, sub ($p) { $p->stock >= $qty ? 1 : 0 }),
         0,
@@ -33,7 +33,6 @@ sub in_stock :sig((ProductId, Quantity) -> Bool ![ProductStore]) ($id, $qty) {
 
 sub deduct_stock :sig((ProductId, Quantity) -> Result[Quantity] ![Logger, ProductStore]) ($id, $qty) {
     my $opt = ProductStore::get_product($id);
-    # @typist-ignore — Result free var
     match $opt,
         Some => sub ($product) {
             if ($product->stock < $qty) {
@@ -50,7 +49,6 @@ sub deduct_stock :sig((ProductId, Quantity) -> Result[Quantity] ![Logger, Produc
         };
 }
 
-# @typist-ignore — option_or parametric type variable resolution
 sub restock :sig((ProductId, Quantity) -> Quantity ![Logger, ProductStore]) ($id, $qty) {
     my $opt = ProductStore::get_product($id);
     Shop::Func::HKT::option_or(

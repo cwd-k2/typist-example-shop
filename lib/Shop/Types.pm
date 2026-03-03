@@ -141,12 +141,6 @@ BEGIN {
 # ── Effects ───────────────────────────────────
 
 BEGIN {
-    # IO is a standard effect label registered by Typist's Prelude.
-    # typist-check (static) recognizes it, but the runtime CHECK-phase
-    # checker resolves effects within the package's own registry and
-    # does not see Prelude labels. Re-declare here for both checkers.
-    effect IO => +{};
-
     effect Logger => +{
         log       => '(LogLevel, Str) -> Void',
         log_entry => '(LogEntry) -> Void',

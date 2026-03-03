@@ -135,12 +135,10 @@ my $bind  = \&Monad::bind;
 
 # ── Functor / Foldable Derived ────────────────
 
-# @typist-ignore — dispatches through CodeRef, type depends on instance
 sub fmap2 :sig(<A, B, C>(ArrayRef[A], (B) -> C, (A) -> B) -> ArrayRef[C]) ($container, $f, $g) {
     $fmap->($fmap->($container, $g), $f);
 }
 
-# @typist-ignore — dispatches through CodeRef, type depends on instance
 sub map_reduce :sig(<A, B, C>(ArrayRef[A], (A) -> B, C, (B, C) -> C) -> C) ($container, $map_fn, $init, $reduce_fn) {
     $foldr->($fmap->($container, $map_fn), $init, $reduce_fn);
 }
@@ -163,12 +161,10 @@ sub fold_all :sig(<A>(ArrayRef[A], (A) -> Bool) -> Bool) ($container, $pred) {
 
 # ── Monad Derived ─────────────────────────────
 
-# @typist-ignore — nested container type depends on instance
 sub mjoin :sig(<A>(ArrayRef[ArrayRef[A]]) -> ArrayRef[A]) ($nested) {
     $bind->($nested, sub ($x) { $x });
 }
 
-# @typist-ignore — monadic composition, type depends on instance
 sub kleisli :sig(<A, B, C>((A) -> ArrayRef[B], (B) -> ArrayRef[C]) -> (A) -> ArrayRef[C]) ($f, $g) {
     sub ($x) { $bind->($f->($x), $g) };
 }
@@ -295,12 +291,12 @@ sub sequence_option :sig(<A>(ArrayRef[Option[A]]) -> Option[ArrayRef[A]]) ($opti
 }
 
 sub traverse_result :sig(<A, B>(ArrayRef[A], (A) -> Result[B]) -> Result[ArrayRef[B]]) ($items, $f) {
-    # @typist-ignore — map produces ArrayRef[(A) -> Result[B]] in checker, actually ArrayRef[Result[B]]
+    # @typist-ignore — [map {...}] inferred as ArrayRef[Any]
     sequence_result([map { $f->($_) } @$items]);
 }
 
 sub traverse_option :sig(<A, B>(ArrayRef[A], (A) -> Option[B]) -> Option[ArrayRef[B]]) ($items, $f) {
-    # @typist-ignore — map produces ArrayRef[(A) -> Option[B]] in checker, actually ArrayRef[Option[B]]
+    # @typist-ignore — [map {...}] inferred as ArrayRef[Any]
     sequence_option([map { $f->($_) } @$items]);
 }
 
@@ -331,12 +327,12 @@ sub cat_options :sig(<A>(ArrayRef[Option[A]]) -> ArrayRef[A]) ($options) {
 }
 
 sub filter_map :sig(<A, B>(ArrayRef[A], (A) -> Option[B]) -> ArrayRef[B]) ($arr, $f) {
-    # @typist-ignore — map produces ArrayRef[(A) -> Option[B]] in checker
+    # @typist-ignore — [map {...}] inferred as ArrayRef[Any]
     cat_options([map { $f->($_) } @$arr]);
 }
 
 sub lift_a2_result :sig(<A, B, C>((A, B) -> C, Result[A], Result[B]) -> Result[C]) ($f, $ra, $rb) {
-    # @typist-ignore — curried closure type: result_fmap returns Result[B] in checker
+    # @typist-ignore — curried closure: result_fmap returns Result[B], not Result[(A)->B]
     result_ap(result_fmap($ra, sub ($a) { sub ($b) { $f->($a, $b) } }), $rb);
 }
 

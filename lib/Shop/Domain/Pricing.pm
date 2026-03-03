@@ -14,7 +14,7 @@ use Shop::Func::HKT;
 # ── Discount Calculation ──────────────────────
 
 sub discount_rate :sig((CustomerTier) -> DiscountPct) ($tier) {
-    # @typist-ignore — ternary chain widens literals to Int, losing DiscountPct precision
+    # @typist-ignore — ternary chain widens literal union (0|5|10|15|20) to Int
     match $tier,
         Regular => sub ()     { 0 },
         Premium => sub ($pts) { $pts >= 1000 ? 15 : $pts >= 500 ? 10 : 5 };

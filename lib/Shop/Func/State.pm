@@ -97,11 +97,10 @@ sub empty_cart :sig(() -> CartState) () {
 }
 
 # add_to_cart : OrderItem -> State CartState ()
-# @typist-ignore — returns closure (CartState -> [(), CartState])
 sub add_to_cart ($item) {
     modify(sub ($cart) {
         my $line_total = $item->unit_price * $item->quantity;
-        # @typist-ignore — array spread produces ArrayRef[Any]
+        # @typist-ignore — array spread [@{...}, $item] inferred as ArrayRef[Any]
         CartState(
             items         => [@{$cart->items}, $item],
             running_total => $cart->running_total + $line_total,
@@ -111,7 +110,6 @@ sub add_to_cart ($item) {
 }
 
 # cart_summary : State CartState Str
-# @typist-ignore — returns closure (CartState -> [Str, CartState])
 sub cart_summary () {
     gets(sub ($cart) {
         my $n     = $cart->item_count;
