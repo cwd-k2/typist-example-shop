@@ -1,16 +1,23 @@
-package Shop::Report;
+package Shop::Feature::Report;
 use v5.40;
 use Typist;
 use Shop::Types;
-use Shop::Order;
+use Shop::Domain::Order;
+use Shop::Func::HKT;
+
+# ═══════════════════════════════════════════════════
+#  Report — Daily report generation and analytics
+#
+#  HKT integration:
+#    order_totals via Functor::fmap
+#    revenue_orders via filter
+# ═══════════════════════════════════════════════════
 
 # ── Report Generation ─────────────────────────
 
-sub build_daily_report :sig(() -> ReportNode ![Logger]) () {
-    my $orders = Shop::Order::all_orders();
-    Logger::log("Generating daily report for " . scalar(@$orders) . " orders");
-
-    my @order_summaries = map { Shop::Order::summarize_order($_) } @$orders;
+sub build_daily_report :sig(() -> ReportNode ![Logger, OrderStore]) () {
+    my $orders = Shop::Domain::Order::all_orders();
+    Logger::log(Info(), "Generating daily report for " . scalar(@$orders) . " orders");
 
     my $total_revenue   :sig(Int) = 0;
     my $confirmed_count :sig(Int) = 0;
@@ -58,7 +65,7 @@ sub build_daily_report :sig(() -> ReportNode ![Logger]) () {
         ],
     );
 
-    Logger::log("Report complete: revenue=$total_revenue");
+    Logger::log(Info(), "Report complete: revenue=$total_revenue");
 
     ReportNode(
         label    => "End of Day Report",
@@ -67,32 +74,23 @@ sub build_daily_report :sig(() -> ReportNode ![Logger]) () {
     );
 }
 
+# HKT integration: filter for revenue orders
 sub revenue_orders :sig((ArrayRef[Order]) -> ArrayRef[Order]) ($orders) {
-    my @result;
-    for my $o (@$orders) {
-        my $include = match $o->status,
+    Shop::Func::HKT::filter($orders, sub ($o) {
+        match $o->status,
             Confirmed => sub          { 1 },
             Fulfilled => sub          { 1 },
             Created   => sub          { 0 },
             Cancelled => sub ($reason) { 0 };
-        push @result, $o if $include;
-    }
-    \@result;
+    });
 }
 
+# HKT integration: Functor::fmap for projection
 sub order_totals :sig((ArrayRef[Order]) -> ArrayRef[Int]) ($orders) {
-    my @totals;
-    for my $o (@$orders) {
-        push @totals, $o->total;
-    }
-    \@totals;
+    Functor::fmap($orders, sub ($o) { $o->total });
 }
 
 # ── Rank-2 Polymorphism ───────────────────────
-#
-# transform_all takes a function that works on ANY type (forall A. A -> A)
-# and applies it to every order. The rank-2 type ensures the transformation
-# is truly polymorphic — a monomorphic (Int -> Int) would be rejected.
 
 sub transform_all :sig((forall A. A -> A, ArrayRef[Order]) -> ArrayRef[Order]) ($f, $orders) {
     my @result = map { $f->($_) } @$orders;

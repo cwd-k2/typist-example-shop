@@ -1,7 +1,8 @@
-package Shop::Analytics;
+package Shop::Feature::Analytics;
 use v5.40;
 use Typist 'Int', 'Str';
 use Shop::Types;
+use Shop::Func::HKT;
 
 use Exporter 'import';
 our @EXPORT = ();
@@ -9,9 +10,10 @@ our @EXPORT = ();
 # ═══════════════════════════════════════════════════
 #  Analytics — Aggregate shop data
 #
-#  Exercises inference across several patterns:
-#  Result/Option chaining, nested generics, HOFs
-#  with ADT returns, match-based pipelines.
+#  HKT integration:
+#    product_prices via Functor::fmap
+#    total_value    via Foldable::foldr + Functor::fmap
+#    filter_valid   via cat_results
 # ═══════════════════════════════════════════════════
 
 # ── Safe lookups (Option-returning wrappers) ─────
@@ -47,42 +49,32 @@ sub validate_name ($name) {
     Ok($name);
 }
 
-# Unannotated: exercises match on imported ADT (Option → Result conversion)
+# Unannotated: exercises match on imported ADT (Option -> Result conversion)
 sub find_or_error ($products, $id) {
     match safe_find($products, $id),
         Some => sub ($p) { Ok($p) },
         None => sub ()   { Err("Product not found: " . $id->base) };
 }
 
-# ── Aggregation (map/fold patterns) ──────────────
+# ── Aggregation (HKT patterns) ───────────────────
 
+# HKT: Functor::fmap + fold_sum
 sub total_value :sig((ArrayRef[Product]) -> Int) ($products) {
-    my $sum :sig(Int) = 0;
-    for my $p (@$products) {
-        $sum += $p->price * $p->stock;
-    }
-    $sum;
+    my $values = Functor::fmap($products, sub ($p) { $p->price * $p->stock });
+    # @typist-ignore — Functor::fmap returns F[Any], fold_sum expects ArrayRef[Int]
+    Shop::Func::HKT::fold_sum($values);
 }
 
-# Unannotated: exercises accumulator + accessor inference
+# HKT: Functor::fmap for projection
 sub product_prices ($products) {
-    my @prices;
-    for my $p (@$products) {
-        push @prices, $p->price;
-    }
-    \@prices;
+    Functor::fmap($products, sub ($p) { $p->price });
 }
 
-# Unannotated: higher-order filter with Result match
+# HKT: cat_results for filtering
 sub filter_valid ($items, $validate) {
-    my @ok;
-    for my $item (@$items) {
-        my $result = $validate->($item);
-        match $result,
-            Ok  => sub ($v) { push @ok, $v },
-            Err => sub ($e) { };
-    }
-    \@ok;
+    my $results = Functor::fmap($items, $validate);
+    # @typist-ignore — Functor::fmap returns F[B], cat_results expects ArrayRef[Result[A]]
+    Shop::Func::HKT::cat_results($results);
 }
 
 # ── Statistics ───────────────────────────────────
@@ -126,7 +118,7 @@ sub categorize ($product) {
 
 # ── Pipeline composition ─────────────────────────
 
-# Unannotated: exercises chained match (Result → Result)
+# Unannotated: exercises chained match (Result -> Result)
 sub checked_product ($products, $id, $min_stock) {
     my $found = find_or_error($products, $id);
     match $found,

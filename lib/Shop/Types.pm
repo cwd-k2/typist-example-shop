@@ -5,7 +5,7 @@ use Typist 'Int', 'Str', 'optional';
 use Exporter 'import';
 our @EXPORT = qw(
   ProductId OrderId CustomerId unwrap
-  Product OrderItem Order ReportNode
+  Product OrderItem Order ReportNode Customer
   Cash Card Transfer
   Pending Completed Failed Refunded
   Regular Premium
@@ -13,6 +13,9 @@ our @EXPORT = qw(
   Created Confirmed Fulfilled Cancelled
   Sale Refund StockCheck
   Some None
+  Debug Info Warn Error
+  LogEntry
+  Valid Invalid
 );
 
 # ── Newtypes ──────────────────────────────────
@@ -64,6 +67,14 @@ BEGIN {
         value    => 'Price',
         children => 'ArrayRef[ReportNode]',
     );
+
+    struct Customer => (
+        id    => 'CustomerId',
+        name  => Str,
+        email => Str,
+        phone => Str | 'Undef',
+        tier  => 'CustomerTier',
+    );
 }
 
 # ── ADTs ──────────────────────────────────────
@@ -106,12 +117,65 @@ BEGIN {
     );
 }
 
+# ── Log ───────────────────────────────────────
+
+BEGIN {
+    enum LogLevel => qw(Debug Info Warn Error);
+
+    struct LogEntry => (
+        level   => 'LogLevel',
+        message => Str,
+        source  => optional(Str),
+    );
+}
+
+# ── Validation ADT ────────────────────────────
+
+BEGIN {
+    datatype 'Validation[E, T]' => (
+        Valid   => '(T)',
+        Invalid => '(ArrayRef[E])'
+    );
+}
+
 # ── Effects ───────────────────────────────────
 
 BEGIN {
-    effect Logger => +{ log => '(Str) -> Void', };
+    # IO is a standard effect label registered by Typist's Prelude.
+    # typist-check (static) recognizes it, but the runtime CHECK-phase
+    # checker resolves effects within the package's own registry and
+    # does not see Prelude labels. Re-declare here for both checkers.
+    effect IO => +{};
+
+    effect Logger => +{
+        log       => '(LogLevel, Str) -> Void',
+        log_entry => '(LogEntry) -> Void',
+    };
 
     effect PaymentGateway => +{ charge => '(Int, PaymentMethod) -> Bool', };
+
+    effect CustomerStore => +{
+        get_customer  => '(CustomerId) -> Option[Customer]',
+        put_customer  => '(Customer) -> Void',
+        all_customers => '() -> ArrayRef[Customer]',
+    };
+
+    effect ProductStore => +{
+        get_product  => '(ProductId) -> Option[Product]',
+        put_product  => '(Product) -> Void',
+        all_products => '() -> ArrayRef[Product]',
+    };
+
+    effect OrderStore => +{
+        get_order  => '(OrderId) -> Option[Order]',
+        put_order  => '(Order) -> Void',
+        all_orders => '() -> ArrayRef[Order]',
+    };
+
+    effect PaymentStore => +{
+        get_payment => '(OrderId) -> Option[PaymentStatus]',
+        put_payment => '(OrderId, PaymentStatus) -> Void',
+    };
 }
 
 # ── Type Classes ──────────────────────────────

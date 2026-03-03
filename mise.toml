@@ -4,8 +4,8 @@ run = "cpanm -nq -L local https://github.com/cwd-k2/typist.git"
 
 [tasks.run]
 description = "Run the shop application"
-run = "perl -Ilocal/lib/perl5 -Ilib script/app.pl"
+run = "TYPIST_CHECK_QUIET=1 perl -Ilocal/lib/perl5 -Ilib script/app.pl"
 
 [tasks.verify]
 description = "Verify types (0 diagnostics expected)"
-run = "perl -Ilocal/lib/perl5 -Ilib local/bin/typist-check lib/Shop/*.pm"
+run = "perl -Ilocal/lib/perl5 -Ilib local/bin/typist-check lib/Shop/*.pm lib/Shop/**/*.pm"
