@@ -292,12 +292,10 @@ sub sequence_option :sig(<A>(ArrayRef[Option[A]]) -> Option[ArrayRef[A]]) ($opti
 }
 
 sub traverse_result :sig(<A, B>(ArrayRef[A], (A) -> Result[B]) -> Result[ArrayRef[B]]) ($items, $f) {
-    # @typist-ignore — [map {...}] inferred as ArrayRef[Any]
     sequence_result([map { $f->($_) } @$items]);
 }
 
 sub traverse_option :sig(<A, B>(ArrayRef[A], (A) -> Option[B]) -> Option[ArrayRef[B]]) ($items, $f) {
-    # @typist-ignore — [map {...}] inferred as ArrayRef[Any]
     sequence_option([map { $f->($_) } @$items]);
 }
 
@@ -328,7 +326,6 @@ sub cat_options :sig(<A>(ArrayRef[Option[A]]) -> ArrayRef[A]) ($options) {
 }
 
 sub filter_map :sig(<A, B>(ArrayRef[A], (A) -> Option[B]) -> ArrayRef[B]) ($arr, $f) {
-    # @typist-ignore — [map {...}] inferred as ArrayRef[Any]
     cat_options([map { $f->($_) } @$arr]);
 }
 

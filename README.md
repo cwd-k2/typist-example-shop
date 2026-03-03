@@ -64,7 +64,7 @@ lib/Shop/
 ## Known Type Limitations
 
 Both checking layers — static (`typist-check`) and runtime CHECK-phase
-(`use Typist`) — pass with **0 diagnostics**. 23 call sites use
+(`use Typist`) — pass with **0 diagnostics**. 7 call sites use
 `# @typist-ignore` to suppress static diagnostics that arise from inference
 limitations rather than actual type errors. 8 named functions remain
 unannotated due to structural limitations of `:sig()`.
@@ -73,12 +73,10 @@ unannotated due to structural limitations of `:sig()`.
 
 | Category | Sites | Description |
 |---|---|---|
-| match implicit return | 5 | `match` infers `Result[Any]` instead of `Result[T]` |
-| Functor/Monad dispatch | 5 | Typeclass returns `F[Any]`/`F[B]` instead of concrete type |
-| Array literal inference | 5 | `[map {...}]` and `[@$a, @$b]` inferred as `ArrayRef[Any]` |
-| Curried closure types | 4 | Nested closures produce wrong intermediate types |
+| Curried closure types | 4 | `sub ($a) { sub ($b) {...} }` mistyped by checker |
+| Monad dispatch | 1 | `Monad::bind` returns `F[B]` instead of `ArrayRef[C]` |
 | Type narrowing | 1 | `defined()` guard does not narrow `Str \| Undef` to `Str` |
-| Other | 3 | Parametric return, ternary widening, option_or context |
+| Type context | 1 | `option_or` returns `Quantity` instead of `Bool` |
 
 ### Unannotated Functions (8)
 

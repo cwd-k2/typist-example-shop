@@ -14,7 +14,6 @@ use Shop::Func::HKT;
 # ── Discount Calculation ──────────────────────
 
 sub discount_rate :sig((CustomerTier) -> DiscountPct) ($tier) {
-    # @typist-ignore — ternary chain widens literal union (0|5|10|15|20) to Int
     match $tier,
         Regular => sub ()     { 0 },
         Premium => sub ($pts) { $pts >= 1000 ? 15 : $pts >= 500 ? 10 : 5 };
@@ -33,7 +32,6 @@ sub order_subtotal :sig((ArrayRef[OrderItem]) -> Price) ($items) {
     my $line_totals = Functor::fmap($items, sub ($item) {
         $item->unit_price * $item->quantity;
     });
-    # @typist-ignore — Functor::fmap returns F[Any], fold_sum expects ArrayRef[Int]
     Shop::Func::HKT::fold_sum($line_totals);
 }
 

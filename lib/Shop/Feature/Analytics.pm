@@ -59,20 +59,17 @@ sub find_or_error :sig((ArrayRef[Product], ProductId) -> Result[Product]) ($prod
 # HKT: Functor::fmap + fold_sum
 sub total_value :sig((ArrayRef[Product]) -> Int) ($products) {
     my $values = Functor::fmap($products, sub ($p) { $p->price * $p->stock });
-    # @typist-ignore — Functor::fmap returns F[Any], fold_sum expects ArrayRef[Int]
     Shop::Func::HKT::fold_sum($values);
 }
 
 # HKT: Functor::fmap for projection
 sub product_prices :sig((ArrayRef[Product]) -> ArrayRef[Int]) ($products) {
-    # @typist-ignore — Functor::fmap returns F[Any], not ArrayRef[Int]
     Functor::fmap($products, sub ($p) { $p->price });
 }
 
 # HKT: cat_results for filtering
 sub filter_valid :sig(<A>(ArrayRef[A], (A) -> Result[A]) -> ArrayRef[A]) ($items, $validate) {
     my $results = Functor::fmap($items, $validate);
-    # @typist-ignore — Functor::fmap returns F[B], cat_results expects ArrayRef[Result[A]]
     Shop::Func::HKT::cat_results($results);
 }
 

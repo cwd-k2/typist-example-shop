@@ -49,7 +49,6 @@ sub writer_bind :sig(<A, B>(Pair[A, ArrayRef[Str]], (A) -> Pair[B, ArrayRef[Str]
     match $w,
         Pair => sub ($a, $log) {
             match $f->($a),
-                # @typist-ignore — array spread [@$log, @$log2] inferred as ArrayRef[Any]
                 Pair => sub ($b, $log2) { Pair($b, [@$log, @$log2]) };
         };
 }

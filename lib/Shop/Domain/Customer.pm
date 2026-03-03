@@ -33,7 +33,6 @@ sub find_customer :sig((CustomerId) -> Option[Customer] ![CustomerStore]) ($id) 
 
 sub upgrade_to_premium :sig((CustomerId, Int) -> Result[Customer] ![Logger, CustomerStore]) ($id, $points) {
     my $opt = CustomerStore::get_customer($id);
-    # @typist-ignore — match implicit return: Result[Any] vs Result[Customer]
     match $opt,
         Some => sub ($customer) {
             my $upgraded = $customer->with(tier => Premium($points));
