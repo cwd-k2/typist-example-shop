@@ -64,27 +64,16 @@ lib/Shop/
 ## Known Type Limitations
 
 Both checking layers — static (`typist-check`) and runtime CHECK-phase
-(`use Typist`) — pass with **0 diagnostics**. 7 call sites use
-`# @typist-ignore` to suppress static diagnostics that arise from inference
-limitations rather than actual type errors. 8 named functions remain
-unannotated due to structural limitations of `:sig()`.
+(`use Typist`) — pass with **0 diagnostics** and **0 `@typist-ignore`
+suppressions**. 7 named functions remain unannotated due to structural
+limitations of `:sig()`.
 
-### @typist-ignore Categories
-
-| Category | Sites | Description |
-|---|---|---|
-| Curried closure types | 4 | `sub ($a) { sub ($b) {...} }` mistyped by checker |
-| Monad dispatch | 1 | `Monad::bind` returns `F[B]` instead of `ArrayRef[C]` |
-| Type narrowing | 1 | `defined()` guard does not narrow `Str \| Undef` to `Str` |
-| Type context | 1 | `option_or` returns `Quantity` instead of `Bool` |
-
-### Unannotated Functions (8)
+### Unannotated Functions (7)
 
 | Function | Reason |
 |---|---|
 | `Store::*_handler` (4) | Returns `+{...}` HashRef — no HashRef type in `:sig()` |
 | `Display::logger_handler` | Same — returns handler HashRef |
-| `Display::list(@items)` | Takes Perl flat list `@` — `:sig()` requires scalar params |
 | `Codensity::unit`, `bind` | Parametric in functor `F: * -> *` — HKT variables only in `typeclass` |
 
 ### Pair[A, B] Tuple Type
