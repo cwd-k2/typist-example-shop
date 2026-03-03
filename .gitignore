@@ -2,6 +2,7 @@
 /vendor/
 cpanfile.snapshot
 
-# Editor configs (VSCode config is tracked as LSP setup example)
+# Editor configs (.vscode/settings.default.json is tracked as template)
+.vscode/settings.json
 .nvim.lua
 /.zed/

@@ -30,7 +30,10 @@ mise run verify
 Install the [Typist extension](https://github.com/cwd-k2/typist/tree/main/editors/vscode) (`typist-0.0.1.vsix`).
 The extension auto-detects `local/bin/typist-lsp` installed by the setup task.
 
-[PerlNavigator](https://marketplace.visualstudio.com/items?itemName=bscan.perlnavigator) settings are included in `.vscode/settings.json`.
+`mise run setup` (or `setup-local`) automatically creates `.vscode/settings.json`
+from the committed template `.vscode/settings.default.json`.
+The generated file is gitignored, so local overrides (e.g. `typist.server.path`)
+stay private.
 
 ## Directory Structure
 

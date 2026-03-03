@@ -1,10 +1,16 @@
+[tasks.init]
+description = "Initialize editor settings from template"
+run = "test -f .vscode/settings.json || cp .vscode/settings.default.json .vscode/settings.json"
+
 [tasks.setup]
 description = "Install Typist from GitHub"
 run = "cpanm -nq -L local https://github.com/cwd-k2/typist.git"
+depends = ["init"]
 
 [tasks."setup-local"]
 description = "Install Typist from local sibling directory (../typist)"
 run = "cp -R ../typist/lib/Typist* local/lib/perl5/ && cp ../typist/bin/typist-check local/bin/"
+depends = ["init"]
 
 [tasks.run]
 description = "Run the shop application"
