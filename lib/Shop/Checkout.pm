@@ -15,12 +15,10 @@ use Shop::Types;
 # ═══════════════════════════════════════════════════
 
 BEGIN {
-    effect 'Register',
-      [qw(Idle Scanning Paying Done)] => +{
-        scan =>
-          [ '(ProductId, Quantity) -> Void', protocol('Scanning -> Scanning') ],
+    effect 'Register', [qw(Idle Scanning Paying Done)] => +{
+        scan     => [ '(ProductId, Quantity) -> Void', protocol('Scanning -> Scanning') ],
         open_reg => [ '() -> Void', protocol('Idle -> Scanning') ],
-        pay => [ '(PaymentMethod) -> Bool', protocol('Scanning -> Paying') ],
+        pay      => [ '(PaymentMethod) -> Bool', protocol('Scanning -> Paying') ],
         complete => [ '() -> Price', protocol('Paying -> Done') ],
       };
 }
