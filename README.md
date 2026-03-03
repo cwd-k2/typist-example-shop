@@ -64,50 +64,30 @@ lib/Shop/
 ## Known Type Limitations
 
 Both checking layers — static (`typist-check`) and runtime CHECK-phase
-(`use Typist`) — pass with **0 diagnostics**. 20 call sites use
+(`use Typist`) — pass with **0 diagnostics**. 23 call sites use
 `# @typist-ignore` to suppress static diagnostics that arise from inference
-limitations rather than actual type errors.
+limitations rather than actual type errors. 8 named functions remain
+unannotated due to structural limitations of `:sig()`.
 
-### match Implicit Return → Result[Any] (5 sites)
+### @typist-ignore Categories
 
-When a `match` expression returns `Ok(...)` in one branch and `Err(...)` in
-another, the static checker infers `Result[Any]` instead of the declared
-concrete `Result[T]`. Affects `upgrade_to_premium`, `confirm_order`,
-`fulfill_order`, `cancel_order`, and `refund_payment`.
+| Category | Sites | Description |
+|---|---|---|
+| match implicit return | 5 | `match` infers `Result[Any]` instead of `Result[T]` |
+| Functor/Monad dispatch | 5 | Typeclass returns `F[Any]`/`F[B]` instead of concrete type |
+| Array literal inference | 5 | `[map {...}]` and `[@$a, @$b]` inferred as `ArrayRef[Any]` |
+| Curried closure types | 4 | Nested closures produce wrong intermediate types |
+| Type narrowing | 1 | `defined()` guard does not narrow `Str \| Undef` to `Str` |
+| Other | 3 | Parametric return, ternary widening, option_or context |
 
-### Functor::fmap → F[Any] (3 sites)
+### Unannotated Functions (8)
 
-Typeclass dispatch through `Functor::fmap` returns the parametric `F[Any]`
-rather than the concrete `ArrayRef[Int]`. Downstream consumers like
-`fold_sum` and `cat_results` then report a type mismatch.
-
-### Array Literal Inference (5 sites)
-
-Array literals `[map { ... } @$arr]` and spread expressions
-`[@{$arr}, $item]` / `[@$log, @$log2]` are inferred as `ArrayRef[Any]`.
-Affects `traverse_result`, `traverse_option`, `filter_map`, `add_to_cart`,
-and `writer_bind`.
-
-### Curried Closure Types (4 sites)
-
-Higher-order functions that build curried closures
-(`sub ($a) { sub ($b) { ... } }`) produce `Result[B]` or `Validation[E, B]`
-where the checker expects `Result[(A)->B]` or `Validation[E, (A)->B]`.
-Affects `lift_a2_result`, `validation_lift_a2`, and `validation_lift_a3`.
-
-### Other (3 sites)
-
-- `cat_results` returns `ArrayRef[A]` (parametric) vs declared `ArrayRef[Order]`
-- `option_or` returns `Quantity` (from fmap context) vs declared `Bool`
-- Ternary chain widens literal union `0|5|10|15|20` to `Int`
-
-### Unannotated Core Functions
-
-**Codensity**: `unit` and `bind` are parametric in the functor `F`, which
-cannot be expressed in `:sig()` — HKT type variables (`F: * -> *`) are only
-available inside `typeclass` definitions. The specializations
-(`lift_list`/`lower_list`, `lift_option`/`lower_option`) carry full `:sig()`
-annotations using `forall R` for the continuation parameter.
+| Function | Reason |
+|---|---|
+| `Store::*_handler` (4) | Returns `+{...}` HashRef — no HashRef type in `:sig()` |
+| `Display::logger_handler` | Same — returns handler HashRef |
+| `Display::list(@items)` | Takes Perl flat list `@` — `:sig()` requires scalar params |
+| `Codensity::unit`, `bind` | Parametric in functor `F: * -> *` — HKT variables only in `typeclass` |
 
 ### Pair[A, B] Tuple Type
 

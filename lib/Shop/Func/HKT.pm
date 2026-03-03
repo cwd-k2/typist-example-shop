@@ -166,6 +166,7 @@ sub mjoin :sig(<A>(ArrayRef[ArrayRef[A]]) -> ArrayRef[A]) ($nested) {
 }
 
 sub kleisli :sig(<A, B, C>((A) -> ArrayRef[B], (B) -> ArrayRef[C]) -> (A) -> ArrayRef[C]) ($f, $g) {
+    # @typist-ignore — Monad::bind returns F[B], not ArrayRef[C]
     sub ($x) { $bind->($f->($x), $g) };
 }
 

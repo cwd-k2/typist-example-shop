@@ -357,7 +357,7 @@ handle {
     Shop::Infra::Display::info("Kleisli (find -> classify):");
     for my $pid (ProductId("WIDGET"), ProductId("GADGET"), ProductId("GIZMO")) {
         my $r = $find_and_classify->($pid);
-        Shop::Infra::Display::kv("  " . $pid->base, $r->[0]);
+        Shop::Infra::Display::kv("  " . $pid->base, "" . $r->[0]);
     }
 
     # Codensity: right-associate bind chains via CPS

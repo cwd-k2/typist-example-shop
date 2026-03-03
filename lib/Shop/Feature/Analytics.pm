@@ -43,14 +43,12 @@ sub validate_quantity :sig((Int) -> Result[Int]) ($qty) {
     Ok($qty);
 }
 
-# Unannotated: exercises guard-return + ADT constructor inference
-sub validate_name ($name) {
+sub validate_name :sig((Str) -> Result[Str]) ($name) {
     return Err("Name must not be empty") unless length($name) > 0;
     Ok($name);
 }
 
-# Unannotated: exercises match on imported ADT (Option -> Result conversion)
-sub find_or_error ($products, $id) {
+sub find_or_error :sig((ArrayRef[Product], ProductId) -> Result[Product]) ($products, $id) {
     match safe_find($products, $id),
         Some => sub ($p) { Ok($p) },
         None => sub ()   { Err("Product not found: " . $id->base) };
@@ -66,12 +64,13 @@ sub total_value :sig((ArrayRef[Product]) -> Int) ($products) {
 }
 
 # HKT: Functor::fmap for projection
-sub product_prices ($products) {
+sub product_prices :sig((ArrayRef[Product]) -> ArrayRef[Int]) ($products) {
+    # @typist-ignore — Functor::fmap returns F[Any], not ArrayRef[Int]
     Functor::fmap($products, sub ($p) { $p->price });
 }
 
 # HKT: cat_results for filtering
-sub filter_valid ($items, $validate) {
+sub filter_valid :sig(<A>(ArrayRef[A], (A) -> Result[A]) -> ArrayRef[A]) ($items, $validate) {
     my $results = Functor::fmap($items, $validate);
     # @typist-ignore — Functor::fmap returns F[B], cat_results expects ArrayRef[Result[A]]
     Shop::Func::HKT::cat_results($results);
@@ -90,8 +89,7 @@ sub price_stats :sig((ArrayRef[Product]) -> Option[ArrayRef[Int]]) ($products) {
     Some([$min, $max]);
 }
 
-# Unannotated: exercises Option constructor with nested computation
-sub average_price ($products) {
+sub average_price :sig((ArrayRef[Product]) -> Option[Int]) ($products) {
     return None() unless @$products;
     my $sum :sig(Int) = 0;
     $sum += $_->price for @$products;
@@ -110,16 +108,15 @@ sub by_category :sig((ArrayRef[Product]) -> HashRef[ArrayRef[Product]]) ($produc
     \%groups;
 }
 
-# Unannotated: exercises defined-narrowing + early-return Option
-sub categorize ($product) {
+sub categorize :sig((Product) -> Option[Str]) ($product) {
     return None() unless defined($product->category);
+    # @typist-ignore — defined() guard does not narrow Str | Undef to Str
     Some($product->category);
 }
 
 # ── Pipeline composition ─────────────────────────
 
-# Unannotated: exercises chained match (Result -> Result)
-sub checked_product ($products, $id, $min_stock) {
+sub checked_product :sig((ArrayRef[Product], ProductId, Int) -> Result[Product]) ($products, $id, $min_stock) {
     my $found = find_or_error($products, $id);
     match $found,
         Ok  => sub ($p) {

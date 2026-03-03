@@ -86,12 +86,13 @@ sub format_price :sig((Price) -> (ShopConfig) -> Str) ($price) {
 }
 
 # order_total_with_tax_and_shipping : Price -> Reader ShopConfig Price
-sub order_total_with_tax_and_shipping ($subtotal) {
-    reader_bind(price_with_tax($subtotal), sub ($with_tax) {
-        reader_bind(shipping_cost($subtotal), sub ($shipping) {
-            reader_pure($with_tax + $shipping);
-        });
-    });
+sub order_total_with_tax_and_shipping :sig((Price) -> (ShopConfig) -> Price) ($subtotal) {
+    sub ($cfg) {
+        my $with_tax :sig(Price) = price_with_tax($subtotal)->($cfg);
+        my $shipping :sig(Price) = shipping_cost($subtotal)->($cfg);
+        my $total :sig(Price) = $with_tax + $shipping;
+        $total;
+    };
 }
 
 1;
