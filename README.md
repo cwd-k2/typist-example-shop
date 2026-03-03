@@ -2,7 +2,7 @@
 
 A shop application demonstrating [Typist](https://github.com/cwd-k2/typist) — a static type system for Perl 5.
 
-Features exercised: newtypes, structs, ADTs, parametric ADTs (including `Pair[A, B]` for tuple encoding), GADTs, enums, literal unions, optional fields, union types, recursive types, type classes (Functor, Foldable, Monad, Applicative, Traversable), higher-kinded types, natural transformations, Kleisli composition, Codensity monad, Validation (accumulating errors), Reader monad, State monad, Writer monad, rank-2 polymorphism, algebraic effects with handlers, protocol-driven effects, and structured logging.
+Features exercised: newtypes, structs, generic structs (`ReportNode[T]`), ADTs, parametric ADTs (including `Pair[A, B]` for tuple encoding), GADTs, enums, literal unions, optional fields, union types, recursive types, type classes (Functor, Foldable, Monad, Applicative, Traversable), higher-kinded types, natural transformations, Kleisli composition, Codensity monad, Validation (accumulating errors), Reader monad, State monad, Writer monad, rank-2 polymorphism, algebraic effects with handlers, protocol-driven effects, and structured logging.
 
 ## Setup
 
