@@ -15,7 +15,7 @@ use Shop::Func::HKT;
 
 # ── Report Generation ─────────────────────────
 
-sub build_daily_report :sig(() -> ReportNode ![Logger, OrderStore]) () {
+sub build_daily_report :sig(() -> ReportNode[Int] ![Logger, OrderStore]) () {
     my $orders = Shop::Domain::Order::all_orders();
     Logger::log(Info(), "Generating daily report for " . scalar(@$orders) . " orders");
 
@@ -99,7 +99,7 @@ sub transform_all :sig((forall A. A -> A, ArrayRef[Order]) -> ArrayRef[Order]) (
 
 # ── Report Formatting ─────────────────────────
 
-sub format_report :sig((ReportNode, Int) -> Str) ($node, $indent) {
+sub format_report :sig(<T>(ReportNode[T], Int) -> Str) ($node, $indent) {
     my $pad  = "  " x $indent;
     my $line = $pad . $node->label . ": " . $node->value;
 

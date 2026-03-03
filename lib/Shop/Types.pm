@@ -63,10 +63,10 @@ BEGIN {
         discount    => 'DiscountPct',
     );
 
-    struct ReportNode => (
+    struct 'ReportNode[T]' => (
         label    => Str,
-        value    => 'Price',
-        children => 'ArrayRef[ReportNode]',
+        value    => 'T',
+        children => 'ArrayRef[ReportNode[T]]',
     );
 
     struct Customer => (
