@@ -577,7 +577,7 @@ handle {
     my $final_cart = Shop::Func::State::exec_state($cart_computation, Shop::Func::State::empty_cart());
     Shop::Infra::Display::kv("Items in cart", scalar @{$final_cart->items});
     Shop::Infra::Display::kv("Running total", "\$" . $final_cart->running_total);
-    Shop::Infra::Display::kv("Item count", $final_cart->item_count);
+    Shop::Infra::Display::kv("Item count", "" . $final_cart->item_count);
 
     Shop::Infra::Display::section_end();
 
@@ -600,23 +600,27 @@ handle {
         },
     );
 
-    my ($audit_result, $audit_log) = Shop::Func::Writer::run_writer($audit);
-    Shop::Infra::Display::info("Audit trail for Alice's order:");
-    for my $line (@$audit_log) {
-        Shop::Infra::Display::info($line);
-    }
-    Shop::Infra::Display::kv("Audited total", "\$$audit_result");
+    match Shop::Func::Writer::run_writer($audit),
+        Pair => sub ($audit_result, $audit_log) {
+            Shop::Infra::Display::info("Audit trail for Alice's order:");
+            for my $line (@$audit_log) {
+                Shop::Infra::Display::info($line);
+            }
+            Shop::Infra::Display::kv("Audited total", "\$$audit_result");
+        };
 
     # Demonstrate censor: redact discount details
     my $censored = Shop::Func::Writer::censor(
         sub ($log) { [grep { $_ !~ /Discount/ } @$log] },
         $audit,
     );
-    my (undef, $censored_log) = Shop::Func::Writer::run_writer($censored);
-    Shop::Infra::Display::info("Censored trail (no discount lines):");
-    for my $line (@$censored_log) {
-        Shop::Infra::Display::info($line);
-    }
+    match Shop::Func::Writer::run_writer($censored),
+        Pair => sub ($, $censored_log) {
+            Shop::Infra::Display::info("Censored trail (no discount lines):");
+            for my $line (@$censored_log) {
+                Shop::Infra::Display::info($line);
+            }
+        };
 
     Shop::Infra::Display::section_end();
 

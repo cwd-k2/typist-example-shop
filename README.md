@@ -2,7 +2,7 @@
 
 A shop application demonstrating [Typist](https://github.com/cwd-k2/typist) — a static type system for Perl 5.
 
-Features exercised: newtypes, structs, ADTs, parametric ADTs, GADTs, enums, literal unions, optional fields, union types, recursive types, type classes (Functor, Foldable, Monad, Applicative, Traversable), higher-kinded types, natural transformations, Kleisli composition, Codensity monad, Validation (accumulating errors), Reader monad, State monad, Writer monad, rank-2 polymorphism, algebraic effects with handlers, protocol-driven effects, and structured logging.
+Features exercised: newtypes, structs, ADTs, parametric ADTs (including `Pair[A, B]` for tuple encoding), GADTs, enums, literal unions, optional fields, union types, recursive types, type classes (Functor, Foldable, Monad, Applicative, Traversable), higher-kinded types, natural transformations, Kleisli composition, Codensity monad, Validation (accumulating errors), Reader monad, State monad, Writer monad, rank-2 polymorphism, algebraic effects with handlers, protocol-driven effects, and structured logging.
 
 ## Setup
 
@@ -64,7 +64,7 @@ lib/Shop/
 ## Known Type Limitations
 
 Both checking layers — static (`typist-check`) and runtime CHECK-phase
-(`use Typist`) — pass with **0 diagnostics**. 19 call sites use
+(`use Typist`) — pass with **0 diagnostics**. 20 call sites use
 `# @typist-ignore` to suppress static diagnostics that arise from inference
 limitations rather than actual type errors.
 
@@ -81,11 +81,12 @@ Typeclass dispatch through `Functor::fmap` returns the parametric `F[Any]`
 rather than the concrete `ArrayRef[Int]`. Downstream consumers like
 `fold_sum` and `cat_results` then report a type mismatch.
 
-### Array Literal Inference (4 sites)
+### Array Literal Inference (5 sites)
 
 Array literals `[map { ... } @$arr]` and spread expressions
-`[@{$arr}, $item]` are inferred as `ArrayRef[Any]`. Affects `traverse_result`,
-`traverse_option`, `filter_map`, and `add_to_cart`.
+`[@{$arr}, $item]` / `[@$log, @$log2]` are inferred as `ArrayRef[Any]`.
+Affects `traverse_result`, `traverse_option`, `filter_map`, `add_to_cart`,
+and `writer_bind`.
 
 ### Curried Closure Types (4 sites)
 
@@ -100,10 +101,18 @@ Affects `lift_a2_result`, `validation_lift_a2`, and `validation_lift_a3`.
 - `option_or` returns `Quantity` (from fmap context) vs declared `Bool`
 - Ternary chain widens literal union `0|5|10|15|20` to `Int`
 
-### Codensity Core (unannotated)
+### Unannotated Core Functions
 
-`unit` and `bind` in `Shop::Func::Codensity` are parametric in the functor
-`F`, which cannot be expressed in `:sig()` — HKT type variables (`F: * -> *`)
-are only available inside `typeclass` definitions. The specializations
+**Codensity**: `unit` and `bind` are parametric in the functor `F`, which
+cannot be expressed in `:sig()` — HKT type variables (`F: * -> *`) are only
+available inside `typeclass` definitions. The specializations
 (`lift_list`/`lower_list`, `lift_option`/`lower_option`) carry full `:sig()`
 annotations using `forall R` for the continuation parameter.
+
+### Pair[A, B] Tuple Type
+
+`State S A` and `Writer W A` use a pair encoding to thread state/log alongside
+values. The `Pair[A, B]` datatype (defined in `Shop::Types`) replaces the
+original anonymous `[$a, $s]` ArrayRef encoding, enabling full `:sig()`
+annotations on all State and Writer operations. Reader (`Reader E A = E -> A`)
+is a plain function type and requires no tuple encoding.

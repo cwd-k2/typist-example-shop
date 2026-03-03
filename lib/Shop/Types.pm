@@ -15,6 +15,7 @@ our @EXPORT = qw(
   Some None
   Debug Info Warn Error
   LogEntry
+  Pair
   Valid Invalid
 );
 
@@ -126,6 +127,14 @@ BEGIN {
         level   => 'LogLevel',
         message => Str,
         source  => optional(Str),
+    );
+}
+
+# ── Pair (Tuple) ─────────────────────────────
+
+BEGIN {
+    datatype 'Pair[A, B]' => (
+        Pair => '(A, B)'
     );
 }
 

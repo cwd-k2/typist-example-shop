@@ -9,10 +9,10 @@ our @EXPORT = ();
 # ═══════════════════════════════════════════════════
 #  State — Pure state-threading monad
 #
-#  State S A  ~=  S -> (A, S)
+#  State S A  ~=  S -> Pair[A, S]
 #
 #  Thread mutable state through a computation purely.
-#  `get` reads the current state, `put` replaces it,
+#  `get` retrieves the current state, `put` replaces it,
 #  `modify` applies a transformation.
 # ═══════════════════════════════════════════════════
 
@@ -26,63 +26,66 @@ BEGIN {
 
 # ── Core Operations ───────────────────────────
 #
-# State S A is represented as a closure S -> [A, S].
-# Core combinators are polymorphic over S and A;
-# these remain untyped as the closure-pair representation
-# cannot be expressed in :sig().
-# Shop-specific operations below are concretely typed.
+# State S A is represented as a closure S -> Pair[A, S].
+# S is specialized to CartState for :sig() annotations.
 
-# state : (S -> [A, S]) -> State S A
-sub state ($f) { $f }
+# state : (CartState -> Pair[A, CartState]) -> State CartState A
+sub state :sig(<A>((CartState) -> Pair[A, CartState]) -> (CartState) -> Pair[A, CartState]) ($f) { $f }
 
-# run_state : State S A -> S -> [A, S]
-sub run_state ($st, $s) { $st->($s) }
+# run_state : State CartState A -> CartState -> Pair[A, CartState]
+sub run_state :sig(<A>((CartState) -> Pair[A, CartState], CartState) -> Pair[A, CartState]) ($st, $s) { $st->($s) }
 
-# eval_state : State S A -> S -> A
-sub eval_state ($st, $s) { ($st->($s))->[0] }
-
-# exec_state : State S A -> S -> S
-sub exec_state ($st, $s) { ($st->($s))->[1] }
-
-# state_pure : A -> State S A
-sub state_pure ($a) {
-    sub ($s) { [$a, $s] };
+# eval_state : State CartState A -> CartState -> A
+sub eval_state :sig(<A>((CartState) -> Pair[A, CartState], CartState) -> A) ($st, $s) {
+    match $st->($s),
+        Pair => sub ($a, $) { $a };
 }
 
-# state_fmap : State S A -> (A -> B) -> State S B
-sub state_fmap ($st, $f) {
+# exec_state : State CartState A -> CartState -> CartState
+sub exec_state :sig(<A>((CartState) -> Pair[A, CartState], CartState) -> CartState) ($st, $s) {
+    match $st->($s),
+        Pair => sub ($, $s2) { $s2 };
+}
+
+# state_pure : A -> State CartState A
+sub state_pure :sig(<A>(A) -> (CartState) -> Pair[A, CartState]) ($a) {
+    sub ($s) { Pair($a, $s) };
+}
+
+# state_fmap : State CartState A -> (A -> B) -> State CartState B
+sub state_fmap :sig(<A, B>((CartState) -> Pair[A, CartState], (A) -> B) -> (CartState) -> Pair[B, CartState]) ($st, $f) {
     sub ($s) {
-        my $pair = $st->($s);
-        [$f->($pair->[0]), $pair->[1]];
+        match $st->($s),
+            Pair => sub ($a, $s2) { Pair($f->($a), $s2) };
     };
 }
 
-# state_bind : State S A -> (A -> State S B) -> State S B
-sub state_bind ($st, $f) {
+# state_bind : State CartState A -> (A -> State CartState B) -> State CartState B
+sub state_bind :sig(<A, B>((CartState) -> Pair[A, CartState], (A) -> (CartState) -> Pair[B, CartState]) -> (CartState) -> Pair[B, CartState]) ($st, $f) {
     sub ($s) {
-        my $pair = $st->($s);
-        $f->($pair->[0])->($pair->[1]);
+        match $st->($s),
+            Pair => sub ($a, $s2) { $f->($a)->($s2) };
     };
 }
 
-# get : State S S
-sub get () {
-    sub ($s) { [$s, $s] };
+# get : State CartState CartState
+sub get :sig(() -> (CartState) -> Pair[CartState, CartState]) () {
+    sub ($s) { Pair($s, $s) };
 }
 
-# put : S -> State S ()
-sub put ($s) {
-    sub ($) { [undef, $s] };
+# put : CartState -> State CartState ()
+sub put :sig((CartState) -> (CartState) -> Pair[Str, CartState]) ($s) {
+    sub ($) { Pair("", $s) };
 }
 
-# modify : (S -> S) -> State S ()
-sub modify ($f) {
-    sub ($s) { [undef, $f->($s)] };
+# modify : (CartState -> CartState) -> State CartState ()
+sub modify :sig(((CartState) -> CartState) -> (CartState) -> Pair[Str, CartState]) ($f) {
+    sub ($s) { Pair("", $f->($s)) };
 }
 
-# gets : (S -> A) -> State S A
-sub gets ($f) {
-    sub ($s) { [$f->($s), $s] };
+# gets : (CartState -> A) -> State CartState A
+sub gets :sig(<A>((CartState) -> A) -> (CartState) -> Pair[A, CartState]) ($f) {
+    sub ($s) { Pair($f->($s), $s) };
 }
 
 # ── Shop-specific State operations ───────────
@@ -97,7 +100,7 @@ sub empty_cart :sig(() -> CartState) () {
 }
 
 # add_to_cart : OrderItem -> State CartState ()
-sub add_to_cart ($item) {
+sub add_to_cart :sig((OrderItem) -> (CartState) -> Pair[Str, CartState]) ($item) {
     modify(sub ($cart) {
         my $line_total = $item->unit_price * $item->quantity;
         # @typist-ignore — array spread [@{...}, $item] inferred as ArrayRef[Any]
@@ -110,12 +113,12 @@ sub add_to_cart ($item) {
 }
 
 # cart_summary : State CartState Str
-sub cart_summary () {
-    gets(sub ($cart) {
+sub cart_summary :sig(() -> (CartState) -> Pair[Str, CartState]) () {
+    sub ($cart) {
         my $n     = $cart->item_count;
         my $total = $cart->running_total;
-        "${n} items, total: \$${total}";
-    });
+        Pair("${n} items, total: \$${total}", $cart);
+    };
 }
 
 1;
