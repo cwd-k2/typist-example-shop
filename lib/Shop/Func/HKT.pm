@@ -30,7 +30,7 @@ BEGIN {
     #   fmap(fmap(x, g), f)  ≡ fmap(x, f . g)
 
     typeclass Functor => 'F: * -> *', +{
-        fmap => 'CodeRef[F[A], CodeRef[A -> B] -> F[B]]',
+        fmap => '(F[A], CodeRef[A -> B]) -> F[B]',
     };
 
     instance Functor => 'ArrayRef', +{
@@ -44,7 +44,7 @@ BEGIN {
     # Right fold: tear down a structure from the right.
 
     typeclass Foldable => 'F: * -> *', +{
-        foldr => 'CodeRef[F[A], B, CodeRef[A, B -> B] -> B]',
+        foldr => '(F[A], B, CodeRef[A, B -> B]) -> B',
     };
 
     instance Foldable => 'ArrayRef', +{
@@ -68,7 +68,7 @@ BEGIN {
     #   bind(bind(m, f), g)         ≡ bind(m, \a -> bind(f(a), g))
 
     typeclass Monad => 'F: * -> *', +{
-        bind => 'CodeRef[F[A], CodeRef[A -> F[B]] -> F[B]]',
+        bind => '(F[A], CodeRef[A -> F[B]]) -> F[B]',
     };
 
     instance Monad => 'ArrayRef', +{
@@ -90,8 +90,8 @@ BEGIN {
     # Weaker than Monad — enables parallel/static analysis.
 
     typeclass Applicative => 'F: * -> *', +{
-        pure => 'CodeRef[A -> F[A]]',
-        ap   => 'CodeRef[F[CodeRef[A -> B]], F[A] -> F[B]]',
+        pure => '(A) -> F[A]',
+        ap   => '(F[CodeRef[A -> B]], F[A]) -> F[B]',
     };
 
     instance Applicative => 'ArrayRef', +{
@@ -115,7 +115,7 @@ BEGIN {
     # then collect the results.
 
     typeclass Traversable => 'T: * -> *', +{
-        traverse => 'CodeRef[T[A], CodeRef[A -> F[B]] -> F[T[B]]]',
+        traverse => '(T[A], CodeRef[A -> F[B]]) -> F[T[B]]',
     };
 
     # Bare namespace aliases for ergonomic use
