@@ -107,7 +107,6 @@ sub by_category :sig((ArrayRef[Product]) -> HashRef[ArrayRef[Product]]) ($produc
 
 sub categorize :sig((Product) -> Option[Str]) ($product) {
     return None() unless defined($product->category);
-    # @typist-ignore — defined() guard does not narrow Str | Undef to Str
     Some($product->category);
 }
 

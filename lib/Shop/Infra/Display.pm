@@ -79,8 +79,8 @@ sub kv :sig((Str, Str) -> Void ![IO]) ($key, $value) {
     say "  " . _dim("$key: ") . $value;
 }
 
-sub list (@items) {
-    for my $item (@items) {
+sub list :sig((ArrayRef[Str]) -> Void ![IO]) ($items) {
+    for my $item (@$items) {
         say "  - $item";
     }
 }

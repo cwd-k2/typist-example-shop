@@ -56,11 +56,11 @@ handle {
     Shop::Domain::Inventory::add_product(Product(
         id => ProductId("GIZMO"), name => "Gizmo", price => 8000, stock => 5,
     ));
-    Shop::Infra::Display::list(
+    Shop::Infra::Display::list([
         'Widget ($1,500 x50) -- has description (optional field)',
         'Gadget ($3,200 x20) -- has category',
         'Gizmo  ($8,000 x5)  -- bare',
-    );
+    ]);
     Shop::Infra::Display::blank();
 
     my $alice   = Shop::Domain::Customer::register_customer(CustomerId(1), "Alice",   "alice\@example.com", "090-1234-5678");
@@ -309,7 +309,7 @@ handle {
         });
     });
     Shop::Infra::Display::info("Restock candidates:");
-    Shop::Infra::Display::list(@$restock_plan);
+    Shop::Infra::Display::list($restock_plan);
 
     Shop::Infra::Display::section_end();
 
@@ -371,7 +371,7 @@ handle {
     });
     my $projected = Shop::Func::Codensity::lower_list($projection);
     Shop::Infra::Display::info("Codensity (product x quarter):");
-    Shop::Infra::Display::list(@$projected);
+    Shop::Infra::Display::list($projected);
 
     # mjoin: flatten nested audit data
     my $nested_audit = [[1, 2], [3], [4, 5, 6]];

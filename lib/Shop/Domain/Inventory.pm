@@ -24,9 +24,8 @@ sub find_product :sig((ProductId) -> Option[Product] ![ProductStore]) ($id) {
 
 sub in_stock :sig((ProductId, Quantity) -> Bool ![ProductStore]) ($id, $qty) {
     my $opt = ProductStore::get_product($id);
-    # @typist-ignore — option_or returns Quantity (from fmap context), not Bool
     Shop::Func::HKT::option_or(
-        Shop::Func::HKT::option_fmap($opt, sub ($p) { $p->stock >= $qty ? 1 : 0 }),
+        Shop::Func::HKT::option_fmap($opt, sub ($p) { my $s = $p->stock; $s >= $qty }),
         0,
     );
 }

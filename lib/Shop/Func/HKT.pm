@@ -166,7 +166,6 @@ sub mjoin :sig(<A>(ArrayRef[ArrayRef[A]]) -> ArrayRef[A]) ($nested) {
 }
 
 sub kleisli :sig(<A, B, C>((A) -> ArrayRef[B], (B) -> ArrayRef[C]) -> (A) -> ArrayRef[C]) ($f, $g) {
-    # @typist-ignore — Monad::bind returns F[B], not ArrayRef[C]
     sub ($x) { $bind->($f->($x), $g) };
 }
 
@@ -330,7 +329,6 @@ sub filter_map :sig(<A, B>(ArrayRef[A], (A) -> Option[B]) -> ArrayRef[B]) ($arr,
 }
 
 sub lift_a2_result :sig(<A, B, C>((A, B) -> C, Result[A], Result[B]) -> Result[C]) ($f, $ra, $rb) {
-    # @typist-ignore — curried closure: result_fmap returns Result[B], not Result[(A)->B]
     result_ap(result_fmap($ra, sub ($a) { sub ($b) { $f->($a, $b) } }), $rb);
 }
 
