@@ -115,30 +115,17 @@ BEGIN {
 }
 
 # ── Type Classes ──────────────────────────────
+#
+# Definitions only — instances live in Shop::Instances
+# (cross-file typeclass instance pattern).
 
 BEGIN {
     typeclass Printable => 'T', +{
         display => '(T) -> Str',
     };
 
-    instance Printable => Int, +{
-        display => sub ($v) { "Int<$v>" },
-    };
-
-    instance Printable => Str, +{
-        display => sub ($v) { qq[Str<$v>] },
-    };
-
     typeclass Summarize => 'T', +{
         summarize => '(T) -> Str',
-    };
-
-    instance Summarize => Int, +{
-        summarize => sub ($v) { "numeric: $v" },
-    };
-
-    instance Summarize => Str, +{
-        summarize => sub ($v) { "text: $v" },
     };
 
     # Bare namespace aliases for ergonomic use

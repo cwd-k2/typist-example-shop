@@ -2,6 +2,7 @@
 use v5.40;
 use Typist;
 use Shop::Types;
+use Shop::Instances;
 use Shop::Customer;
 use Shop::Inventory;
 use Shop::Order;
@@ -20,7 +21,8 @@ use Shop::Codensity;
 #  parametric ADT, GADT, enum, literal types,
 #  recursive types, bounded quantification,
 #  rank-2 polymorphism, match, effect/handle,
-#  typeclass, optional struct fields,
+#  typeclass, cross-file instance,
+#  optional struct fields,
 #  Maybe + type narrowing, higher-kinded types,
 #  natural transformation, Codensity.
 # ═══════════════════════════════════════════════════
