@@ -849,13 +849,13 @@ handle {
     my $tree :sig(CategoryTree) = ["Electronics", ["Phones", "Tablets"], "Clothing"];
     Shop::Infra::Display::kv("CategoryTree", "nested structure with :sig(CategoryTree)");
 
-    my $json = +{
+    my $json :sig(Json) = +{
         name  => "Widget",
         price => 1500,
         tags  => ["sale", "popular"],
         meta  => +{ active => 1 },
     };
-    Shop::Infra::Display::kv("Json", "native Perl data satisfies Json type");
+    Shop::Infra::Display::kv("Json", "native Perl data with :sig(Json)");
 
     Shop::Infra::Display::section_end();
 

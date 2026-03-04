@@ -86,7 +86,8 @@ The following limitations were present in earlier typist versions and are now re
 
 - **Constraint conjunction** (`+` syntax): `<T: Printable + Ord>` compound constraints now work in `:sig()` (`Classify::display_sorted`)
 - **Struct runtime inference**: `Inference::infer_value` recognizes blessed structs by their nominal type
-- **Recursive type alias inference**: `:sig(CategoryTree)` variable annotations now work with array literal initializers
+- **Recursive type alias inference**: `:sig(CategoryTree)` and `:sig(Json)` variable annotations now work with literal initializers
+- **Record <: HashRef subtyping**: hash literal records are now recognized as subtypes of `HashRef[Str, V]`
 
 ### Remaining Upstream Issues
 
@@ -101,17 +102,6 @@ for functional dependencies or type applications.
 |---|---|
 | **Ideal** | `Convertible::convert($product)` dispatching with `U = Str` |
 | **Workaround** | Concrete wrappers `convert_product`/`convert_order` (`Classify.pm`) |
-
-#### Recursive type alias: hash literal variable annotation
-
-`:sig(Json)` on hash literal initializers fails because `_infer_hash`
-does not extract `HashRef[K, V]` from Union expected types. Array
-literals (`CategoryTree`) are now supported.
-
-| | |
-|---|---|
-| **Ideal** | `my $json :sig(Json) = +{ name => "Widget", ... }` |
-| **Workaround** | Omit `:sig()` on hash literals; use `Json` in function signatures |
 
 ### Tuple Types
 
