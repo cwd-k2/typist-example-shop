@@ -2,7 +2,7 @@
 
 A shop application demonstrating [Typist](https://github.com/cwd-k2/typist) — a static type system for Perl 5.
 
-Features exercised: newtypes, structs, generic structs (`ReportNode[T]`), bounded generic structs (`Range[T: Num]`), ADTs, parametric ADTs (including `Pair[A, B]` for tuple encoding), GADTs, enums, literal unions, optional fields, union types, recursive types, record types, intersection types, triple tuples (`Triple[A, B, C]`), type classes (Functor, Foldable, Monad, Applicative, Traversable), higher-kinded types, natural transformations, Kleisli composition, Codensity monad, Validation (accumulating errors), Reader monad, State monad, Writer monad, bounded quantification (`<T: Num>`), rank-2 polymorphism, variadic functions (`...Str`), row polymorphism (`r: Row`), `ref()` narrowing, algebraic effects with handlers, protocol-driven effects, and structured logging.
+Features exercised: newtypes, structs, generic structs (`ReportNode[T]`), bounded generic structs (`Range[T: Num]`), ADTs, parametric ADTs, GADTs, enums, literal unions, optional fields, union types, recursive types, record types, intersection types, tuple types (`Tuple[A, B]`, `Tuple[A, B, C]`), type classes (Functor, Foldable, Monad, Applicative, Traversable), higher-kinded types, natural transformations, Kleisli composition, Codensity monad, Validation (accumulating errors), Reader monad, State monad, Writer monad, bounded quantification (`<T: Num>`), rank-2 polymorphism, variadic functions (`...Str`), row polymorphism (`r: Row`), `ref()` narrowing, algebraic effects with handlers, protocol-driven effects, and structured logging.
 
 ## Setup
 
@@ -79,17 +79,15 @@ pass with **0 diagnostics** and **0 `@typist-ignore` suppressions**.
 | `Store::*_handler` (4) | Returns `+{...}` HashRef — no HashRef type in `:sig()` |
 | `Display::logger_handler` | Same — returns handler HashRef |
 
-### Pair[A, B] / Triple[A, B, C] Tuple Encoding
+### Tuple Types
 
-`State S A` and `Writer W A` use `Pair[A, B]` to thread state/log alongside
-values. `Triple[A, B, C]` extends this pattern for three-element tuples
-(e.g. `price_breakdown` returns `Triple[Int, Int, Int]`).
+`State S A` and `Writer W A` use `Tuple[A, S]` / `Tuple[A, ArrayRef[W]]`
+to thread state/log alongside values. `price_breakdown` returns
+`Tuple[Int, Int, Int]`.
 
-Both datatypes exist because the built-in `Tuple[T, ...]` type has a static
-inference limitation: array literals `[...]` are always inferred as
-`ArrayRef[T]`, and there is no coercion path from `ArrayRef` to `Tuple` in
-`typist-check`. ADT constructors (`Pair(a, b)`, `Triple(a, b, c)`) are
-fully tracked through the static checker, making them a reliable alternative.
+Array literals `[...]` are now inferred as `Tuple[T, ...]` when the element
+types are heterogeneous, making plain arrayrefs a natural encoding for
+fixed-size tuples.
 
 Reader (`Reader E A = E -> A`) is a plain function type and requires no
 tuple encoding.
@@ -136,15 +134,9 @@ sub in_range :sig(... -> Bool) ($val, $range) {
 as `Num`. Workaround: annotate intermediate variables with `:sig(Int)`.
 
 ```perl
-# NG: Triple[Price, Num, Price]
+# NG: Tuple[Price, Num, Price]
 my $discount = $subtotal - $final;
 
-# OK: Triple[Int, Int, Int]
+# OK: Tuple[Int, Int, Int]
 my $discount :sig(Int) = $subtotal - $final;
 ```
-
-**Array literals → `ArrayRef[T]`, not `Tuple[T, ...]`**
-
-Documented above under "Pair / Triple Tuple Encoding". The static checker
-always infers `[...]` as `ArrayRef[T]` with no coercion to `Tuple`.
-Workaround: use ADT constructors (`Pair`, `Triple`).

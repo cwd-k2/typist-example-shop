@@ -395,13 +395,11 @@ handle {
     }, "Summary Demo");
     Shop::Infra::Display::blank();
 
-    # Triple ADT: price_breakdown returns Triple[Int, Int, Int]
+    # Tuple: price_breakdown returns Tuple[Int, Int, Int]
     my $breakdown = Shop::Feature::Summary::price_breakdown($alice_items, $alice_disc);
-    match $breakdown,
-        Triple => sub ($sub, $disc, $final) {
-            Shop::Infra::Display::kv("Price breakdown (sub, disc, final)",
-                "\$$sub, -\$$disc, = \$$final");
-        };
+    my ($bd_sub, $bd_disc, $bd_final) = @$breakdown;
+    Shop::Infra::Display::kv("Price breakdown (sub, disc, final)",
+        "\$$bd_sub, -\$$bd_disc, = \$$bd_final");
 
     # Intersection types: format_displayable takes HasName & HasPrice
     my $displayable = +{ name => "Widget", price => 1500 };
@@ -669,27 +667,23 @@ handle {
         },
     );
 
-    match Shop::FP::Writer::run_writer($audit),
-        Pair => sub ($audit_result, $audit_log) {
-            Shop::Infra::Display::info("Audit trail for Alice's order:");
-            for my $line (@$audit_log) {
-                Shop::Infra::Display::info($line);
-            }
-            Shop::Infra::Display::kv("Audited total", "\$$audit_result");
-        };
+    my ($audit_result, $audit_log) = @{Shop::FP::Writer::run_writer($audit)};
+    Shop::Infra::Display::info("Audit trail for Alice's order:");
+    for my $line (@$audit_log) {
+        Shop::Infra::Display::info($line);
+    }
+    Shop::Infra::Display::kv("Audited total", "\$$audit_result");
 
     # Demonstrate censor: redact discount details
     my $censored = Shop::FP::Writer::censor(
         sub ($log) { [grep { $_ !~ /Discount/ } @$log] },
         $audit,
     );
-    match Shop::FP::Writer::run_writer($censored),
-        Pair => sub ($, $censored_log) {
-            Shop::Infra::Display::info("Censored trail (no discount lines):");
-            for my $line (@$censored_log) {
-                Shop::Infra::Display::info($line);
-            }
-        };
+    my ($_val, $censored_log) = @{Shop::FP::Writer::run_writer($censored)};
+    Shop::Infra::Display::info("Censored trail (no discount lines):");
+    for my $line (@$censored_log) {
+        Shop::Infra::Display::info($line);
+    }
 
     Shop::Infra::Display::section_end();
 

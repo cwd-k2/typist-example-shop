@@ -24,15 +24,15 @@ sub log_section :sig(<A, r: Row>((Str) -> A ![r], Str) -> A ![Logger, r]) ($body
     $result;
 }
 
-# ── Triple (Tuple Encoding) ──────────────────
+# ── Tuple ─────────────────────────────────────
 #
-# Triple[Int, Int, Int] = (subtotal, discount_amount, final)
+# Tuple[Int, Int, Int] = (subtotal, discount_amount, final)
 
-sub price_breakdown :sig((ArrayRef[OrderItem], DiscountPct) -> Triple[Int, Int, Int]) ($items, $pct) {
+sub price_breakdown :sig((ArrayRef[OrderItem], DiscountPct) -> Tuple[Int, Int, Int]) ($items, $pct) {
     my $subtotal :sig(Int) = Shop::Domain::Pricing::order_subtotal($items);
     my $final    :sig(Int) = Shop::Domain::Pricing::apply_discount($subtotal, $pct);
     my $discount :sig(Int) = $subtotal - $final;
-    Triple($subtotal, $discount, $final);
+    [$subtotal, $discount, $final];
 }
 
 # ── Intersection Types ──────────────────────

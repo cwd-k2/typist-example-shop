@@ -9,7 +9,7 @@ our @EXPORT = ();
 # ═══════════════════════════════════════════════════
 #  Writer — Audit trail monad
 #
-#  Writer W A  ~=  Pair[A, ArrayRef[W]]
+#  Writer W A  ~=  Tuple[A, ArrayRef[W]]
 #
 #  Accumulate a log alongside a computation.
 #  `tell` appends to the log, `listen` exposes it,
@@ -25,60 +25,58 @@ our @EXPORT = ();
 # ── Core Operations ───────────────────────────
 
 # writer : (A, ArrayRef[Str]) -> Writer Str A
-sub writer :sig(<A>(A, ArrayRef[Str]) -> Pair[A, ArrayRef[Str]]) ($a, $log) {
-    Pair($a, $log);
+sub writer :sig(<A>(A, ArrayRef[Str]) -> Tuple[A, ArrayRef[Str]]) ($a, $log) {
+    [$a, $log];
 }
 
-# run_writer : Writer Str A -> Pair[A, ArrayRef[Str]]
-sub run_writer :sig(<A>(Pair[A, ArrayRef[Str]]) -> Pair[A, ArrayRef[Str]]) ($w) { $w }
+# run_writer : Writer Str A -> Tuple[A, ArrayRef[Str]]
+sub run_writer :sig(<A>(Tuple[A, ArrayRef[Str]]) -> Tuple[A, ArrayRef[Str]]) ($w) { $w }
 
 # writer_pure : A -> Writer Str A
-sub writer_pure :sig(<A>(A) -> Pair[A, ArrayRef[Str]]) ($a) {
+sub writer_pure :sig(<A>(A) -> Tuple[A, ArrayRef[Str]]) ($a) {
     my $empty :sig(ArrayRef[Str]) = [];
-    Pair($a, $empty);
+    [$a, $empty];
 }
 
 # writer_fmap : Writer Str A -> (A -> B) -> Writer Str B
-sub writer_fmap :sig(<A, B>(Pair[A, ArrayRef[Str]], (A) -> B) -> Pair[B, ArrayRef[Str]]) ($w, $f) {
-    match $w,
-        Pair => sub ($a, $log) { Pair($f->($a), $log) };
+sub writer_fmap :sig(<A, B>(Tuple[A, ArrayRef[Str]], (A) -> B) -> Tuple[B, ArrayRef[Str]]) ($w, $f) {
+    my ($a, $log) = @$w;
+    [$f->($a), $log];
 }
 
 # writer_bind : Writer Str A -> (A -> Writer Str B) -> Writer Str B
-sub writer_bind :sig(<A, B>(Pair[A, ArrayRef[Str]], (A) -> Pair[B, ArrayRef[Str]]) -> Pair[B, ArrayRef[Str]]) ($w, $f) {
-    match $w,
-        Pair => sub ($a, $log) {
-            match $f->($a),
-                Pair => sub ($b, $log2) { Pair($b, [@$log, @$log2]) };
-        };
+sub writer_bind :sig(<A, B>(Tuple[A, ArrayRef[Str]], (A) -> Tuple[B, ArrayRef[Str]]) -> Tuple[B, ArrayRef[Str]]) ($w, $f) {
+    my ($a, $log) = @$w;
+    my ($b, $log2) = @{$f->($a)};
+    [$b, [@$log, @$log2]];
 }
 
 # tell : Str -> Writer Str Str
-sub tell :sig((Str) -> Pair[Str, ArrayRef[Str]]) ($msg) {
-    Pair("", [$msg]);
+sub tell :sig((Str) -> Tuple[Str, ArrayRef[Str]]) ($msg) {
+    ["", [$msg]];
 }
 
-# listen : Writer Str A -> Writer Str Pair[A, ArrayRef[Str]]
-sub listen :sig(<A>(Pair[A, ArrayRef[Str]]) -> Pair[Pair[A, ArrayRef[Str]], ArrayRef[Str]]) ($w) {
-    match $w,
-        Pair => sub ($a, $log) { Pair(Pair($a, $log), $log) };
+# listen : Writer Str A -> Writer Str Tuple[A, ArrayRef[Str]]
+sub listen :sig(<A>(Tuple[A, ArrayRef[Str]]) -> Tuple[Tuple[A, ArrayRef[Str]], ArrayRef[Str]]) ($w) {
+    my ($a, $log) = @$w;
+    [[$a, $log], $log];
 }
 
 # censor : (ArrayRef[Str] -> ArrayRef[Str]) -> Writer Str A -> Writer Str A
-sub censor :sig(<A>((ArrayRef[Str]) -> ArrayRef[Str], Pair[A, ArrayRef[Str]]) -> Pair[A, ArrayRef[Str]]) ($f, $w) {
-    match $w,
-        Pair => sub ($a, $log) { Pair($a, $f->($log)) };
+sub censor :sig(<A>((ArrayRef[Str]) -> ArrayRef[Str], Tuple[A, ArrayRef[Str]]) -> Tuple[A, ArrayRef[Str]]) ($f, $w) {
+    my ($a, $log) = @$w;
+    [$a, $f->($log)];
 }
 
 # ── Shop-specific Writer operations ──────────
 
 # price_line : Str -> Price -> Writer Str Price
-sub price_line :sig((Str, Price) -> Pair[Price, ArrayRef[Str]]) ($label, $price) {
-    Pair($price, ["  $label: \$$price"]);
+sub price_line :sig((Str, Price) -> Tuple[Price, ArrayRef[Str]]) ($label, $price) {
+    [$price, ["  $label: \$$price"]];
 }
 
 # subtotal_with_audit : ArrayRef[OrderItem] -> Writer Str Price
-sub subtotal_with_audit :sig((ArrayRef[OrderItem]) -> Pair[Price, ArrayRef[Str]]) ($items) {
+sub subtotal_with_audit :sig((ArrayRef[OrderItem]) -> Tuple[Price, ArrayRef[Str]]) ($items) {
     my $log :sig(ArrayRef[Str]) = [];
     my $total :sig(Int) = 0;
     for my $item (@$items) {
@@ -86,14 +84,14 @@ sub subtotal_with_audit :sig((ArrayRef[OrderItem]) -> Pair[Price, ArrayRef[Str]]
         $total += $line;
         push @$log, "  " . $item->product_id->base . " x" . $item->quantity . " @ \$" . $item->unit_price . " = \$$line";
     }
-    Pair($total, $log);
+    [$total, $log];
 }
 
 # discount_with_audit : Price -> DiscountPct -> Writer Str Price
-sub discount_with_audit :sig((Price, DiscountPct) -> Pair[Price, ArrayRef[Str]]) ($subtotal, $pct) {
+sub discount_with_audit :sig((Price, DiscountPct) -> Tuple[Price, ArrayRef[Str]]) ($subtotal, $pct) {
     my $discounted = int($subtotal * (100 - $pct) / 100);
     my $saved      = $subtotal - $discounted;
-    Pair($discounted, ["  Discount $pct%: -\$$saved", "  After discount: \$$discounted"]);
+    [$discounted, ["  Discount $pct%: -\$$saved", "  After discount: \$$discounted"]];
 }
 
 1;

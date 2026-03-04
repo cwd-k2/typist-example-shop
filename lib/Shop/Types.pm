@@ -15,7 +15,6 @@ our @EXPORT = qw(
   Some None
   Debug Info Warn Error
   LogEntry
-  Pair Triple
   Valid Invalid
   Range
 );
@@ -128,18 +127,6 @@ BEGIN {
         level   => 'LogLevel',
         message => Str,
         source  => optional(Str),
-    );
-}
-
-# ── Pair / Triple (Tuple Encoding) ───────────
-
-BEGIN {
-    datatype 'Pair[A, B]' => (
-        Pair => '(A, B)'
-    );
-
-    datatype 'Triple[A, B, C]' => (
-        Triple => '(A, B, C)'
     );
 }
 

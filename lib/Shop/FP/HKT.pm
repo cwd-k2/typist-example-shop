@@ -152,11 +152,13 @@ sub fold_count :sig(<A>(ArrayRef[A], (A) -> Bool) -> Int) ($container, $pred) {
 }
 
 sub fold_any :sig(<A>(ArrayRef[A], (A) -> Bool) -> Bool) ($container, $pred) {
-    $foldr->($container, 0, sub ($x, $acc) { $pred->($x) || $acc });
+    my $init :sig(Bool) = 0;
+    $foldr->($container, $init, sub ($x, $acc) { $pred->($x) || $acc });
 }
 
 sub fold_all :sig(<A>(ArrayRef[A], (A) -> Bool) -> Bool) ($container, $pred) {
-    $foldr->($container, 1, sub ($x, $acc) { $pred->($x) && $acc });
+    my $init :sig(Bool) = 1;
+    $foldr->($container, $init, sub ($x, $acc) { $pred->($x) && $acc });
 }
 
 # ── Monad Derived ─────────────────────────────
