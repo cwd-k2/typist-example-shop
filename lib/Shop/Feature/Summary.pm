@@ -81,4 +81,25 @@ sub describe_value :sig((Any) -> Str) ($val) {
     }
 }
 
+# ── isa Narrowing ──────────────────────────
+#
+# Union type narrowed by isa check on blessed struct name
+
+sub describe_entity :sig((Product | Customer) -> Str) ($entity) {
+    if ($entity isa Typist::Struct::Product) {
+        $entity->name . " (\$" . $entity->price . ")";
+    } else {
+        $entity->name . " <" . $entity->email . ">";
+    }
+}
+
+# ── Early Return Narrowing ─────────────────
+#
+# Optional field narrowed after early return guard
+
+sub require_product_name :sig((Product) -> Str) ($product) {
+    return "unnamed" unless defined($product->description);
+    "Product: " . $product->name . " — " . $product->description;
+}
+
 1;

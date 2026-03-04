@@ -37,4 +37,29 @@ BEGIN {
     };
 }
 
+# ── Eq ───────────────────────────────────────────
+
+BEGIN {
+    instance Eq => Int, +{ eq_ => sub ($a, $b) { $a == $b ? 1 : 0 } };
+    instance Eq => Str, +{ eq_ => sub ($a, $b) { $a eq $b ? 1 : 0 } };
+}
+
+# ── Ord (superclass: Eq) ────────────────────────
+
+BEGIN {
+    instance Ord => Int, +{ compare => sub ($a, $b) { $a <=> $b } };
+    instance Ord => Str, +{ compare => sub ($a, $b) { $a cmp $b } };
+}
+
+# ── Convertible (multi-param) ────────────────────
+
+BEGIN {
+    instance Convertible => 'Product, Str', +{
+        convert => sub ($p) { $p->name . " (\$" . $p->price . ")" },
+    };
+    instance Convertible => 'Order, Str', +{
+        convert => sub ($o) { "Order #" . $o->id->base . " total=\$" . $o->total },
+    };
+}
+
 1;

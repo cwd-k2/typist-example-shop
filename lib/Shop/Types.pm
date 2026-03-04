@@ -208,4 +208,31 @@ BEGIN {
     *{"Summarize::summarize"} = \&Shop::Types::Summarize::summarize;
 }
 
+# ── Typeclass Hierarchy ──────────────────────
+
+BEGIN {
+    typeclass Eq  => 'T',      +{ eq_     => '(T, T) -> Bool' };
+    typeclass Ord => 'T: Eq',  +{ compare => '(T, T) -> Int'  };
+
+    no strict 'refs';
+    *{"Eq::eq_"}      = \&Shop::Types::Eq::eq_;
+    *{"Ord::compare"}  = \&Shop::Types::Ord::compare;
+}
+
+# ── Multi-parameter Typeclass ────────────────
+
+BEGIN {
+    typeclass Convertible => 'T, U', +{ convert => '(T) -> U' };
+
+    no strict 'refs';
+    *{"Convertible::convert"} = \&Shop::Types::Convertible::convert;
+}
+
+# ── Recursive Type Aliases ───────────────────
+
+BEGIN {
+    typedef CategoryTree => 'Str | ArrayRef[CategoryTree]';
+    typedef Json         => 'Str | Int | Double | Bool | Undef | ArrayRef[Json] | HashRef[Str, Json]';
+}
+
 1;

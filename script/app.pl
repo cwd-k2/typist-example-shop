@@ -21,6 +21,7 @@ use Shop::FP::Validation;
 use Shop::FP::Reader;
 use Shop::FP::State;
 use Shop::FP::Writer;
+use Shop::Feature::Classify;
 
 # ═══════════════════════════════════════════════════
 #  typist-shop — A Day at the Shop
@@ -35,7 +36,11 @@ use Shop::FP::Writer;
 #  natural transformation, Codensity,
 #  Applicative, Traversable, Validation,
 #  Reader, State, Writer,
-#  effect-based Store, structured Logger.
+#  effect-based Store, structured Logger,
+#  typeclass superclass hierarchy,
+#  multi-parameter typeclass, recursive type aliases,
+#  isa narrowing, early return narrowing,
+#  declare, Never, nested handlers.
 # ═══════════════════════════════════════════════════
 
 handle {
@@ -741,6 +746,113 @@ handle {
         Err("no A"), Ok(200),
     );
     Shop::Infra::Display::kv("lift_a2(+, Err, Ok 200)", Shop::FP::HKT::show_result($combined_err));
+
+    Shop::Infra::Display::section_end();
+
+    # ── 22:30  Typeclass Hierarchy & Constraints ──
+
+    Shop::Infra::Display::section("22:30  Typeclass Hierarchy & Constraints");
+
+    # Ord constraint (exercises superclass Eq)
+    my $sorted_prices = Shop::Feature::Classify::sort_by([3200, 1500, 8000]);
+    Shop::Infra::Display::kv("sort_by([3200,1500,8000])", "[" . join(", ", @$sorted_prices) . "]");
+
+    my $max_price = Shop::Feature::Classify::max_by([3200, 1500, 8000]);
+    match $max_price,
+        Some => sub ($v) { Shop::Infra::Display::kv("max_by(prices)", "$v") },
+        None => sub ()   { Shop::Infra::Display::kv("max_by(prices)", "empty") };
+
+    # Printable constraint on generic
+    Shop::Infra::Display::kv("show_all(ints)", Shop::Feature::Classify::show_all([42, 7, 256], ", "));
+    Shop::Infra::Display::kv("show_all(strs)", Shop::Feature::Classify::show_all(["hello", "world"], " | "));
+
+    # Multi-param typeclass: Convertible dispatch (Product -> Str)
+    my $widget_opt2 = Shop::Domain::Inventory::find_product(ProductId("WIDGET"));
+    my $gadget_opt  = Shop::Domain::Inventory::find_product(ProductId("GADGET"));
+
+    match $widget_opt2,
+        Some => sub ($p) { Shop::Infra::Display::info("Convertible: " . Shop::Feature::Classify::convert_product($p)) },
+        None => sub ()   { };
+    match $gadget_opt,
+        Some => sub ($p) { Shop::Infra::Display::info("Convertible: " . Shop::Feature::Classify::convert_product($p)) },
+        None => sub ()   { };
+    match $order1_opt,
+        Some => sub ($o1) { Shop::Infra::Display::info("Convertible: " . Shop::Feature::Classify::convert_order($o1)) },
+        None => sub ()    { };
+
+    Shop::Infra::Display::section_end();
+
+    # ── 23:00  Type Narrowing Patterns ─────────
+
+    Shop::Infra::Display::section("23:00  Type Narrowing Patterns");
+
+    # isa narrowing: Product | Customer → narrowed by isa
+    my $widget_for_isa;
+    match $widget_opt2,
+        Some => sub ($p) { $widget_for_isa = $p },
+        None => sub ()   { };
+
+    Shop::Infra::Display::kv("describe(Product)", Shop::Feature::Summary::describe_entity($widget_for_isa));
+    Shop::Infra::Display::kv("describe(Customer)", Shop::Feature::Summary::describe_entity($alice));
+
+    # Early return narrowing: optional field guard
+    Shop::Infra::Display::kv("require(Widget)", Shop::Feature::Summary::require_product_name($widget_for_isa));
+
+    my $gizmo_for_narrow;
+    my $gizmo_opt2 = Shop::Domain::Inventory::find_product(ProductId("GIZMO"));
+    match $gizmo_opt2,
+        Some => sub ($p) { $gizmo_for_narrow = $p },
+        None => sub ()   { };
+    Shop::Infra::Display::kv("require(Gizmo)", Shop::Feature::Summary::require_product_name($gizmo_for_narrow));
+
+    Shop::Infra::Display::section_end();
+
+    # ── 23:30  Advanced Patterns ───────────────
+
+    Shop::Infra::Display::section("23:30  Advanced Patterns");
+
+    # declare: external function type declaration
+    declare format_currency => '(Int) -> Str';
+    sub format_currency :sig((Int) -> Str) ($amount) {
+        "\$" . int($amount / 100) . "." . sprintf("%02d", $amount % 100);
+    }
+    Shop::Infra::Display::kv("format_currency(15999)", format_currency(15999));
+
+    # Never: bottom type — function that never returns
+    sub unreachable :sig(() -> Never) () { die "unreachable" }
+    Shop::Infra::Display::info("Never type: unreachable() declared (not called)");
+
+    # Nested handlers: inner handler shadows outer
+    my $outer_log = "";
+    my $inner_log = "";
+    handle {
+        Logger::log(Info(), "outer message");
+        handle {
+            Logger::log(Info(), "inner message");
+        } Logger => +{
+            log       => sub ($level, $msg) { $inner_log .= "[inner] $msg; " },
+            log_entry => sub ($entry)       { $inner_log .= "[inner] " . $entry->message . "; " },
+        };
+        Logger::log(Info(), "back to outer");
+    } Logger => +{
+        log       => sub ($level, $msg) { $outer_log .= "[outer] $msg; " },
+        log_entry => sub ($entry)       { $outer_log .= "[outer] " . $entry->message . "; " },
+    };
+    Shop::Infra::Display::kv("Outer handler", $outer_log);
+    Shop::Infra::Display::kv("Inner handler", $inner_log);
+    Shop::Infra::Display::blank();
+
+    # Recursive type aliases
+    my $tree = ["Electronics", ["Phones", "Tablets"], "Clothing"];
+    Shop::Infra::Display::kv("CategoryTree", "nested structure constructed");
+
+    my $json = +{
+        name  => "Widget",
+        price => 1500,
+        tags  => ["sale", "popular"],
+        meta  => +{ active => 1 },
+    };
+    Shop::Infra::Display::kv("Json", "native Perl data satisfies Json type");
 
     Shop::Infra::Display::section_end();
 
