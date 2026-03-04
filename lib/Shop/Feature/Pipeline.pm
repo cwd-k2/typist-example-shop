@@ -19,12 +19,12 @@ use Shop::Types;
 # ═══════════════════════════════════════════════════
 
 BEGIN {
-    effect 'Pipeline', [qw(Raw Validated Enriched)] => +{
-        ingest   => [ '(Str) -> Void', protocol('* -> Raw') ],
-        validate => [ '() -> Bool',    protocol('Raw -> Validated') ],
-        enrich   => [ '(Str) -> Void', protocol('Validated -> Enriched') ],
-        inspect  => [ '() -> Str',     protocol('Validated -> Validated') ],
-        emit     => [ '() -> Str',     protocol('Validated | Enriched -> *') ],
+    effect Pipeline => qw/Raw Validated Enriched/ => +{
+        ingest   => protocol('(Str) -> Void', '* -> Raw'),
+        validate => protocol('() -> Bool',    'Raw -> Validated'),
+        enrich   => protocol('(Str) -> Void', 'Validated -> Enriched'),
+        inspect  => protocol('() -> Str',     'Validated -> Validated'),
+        emit     => protocol('() -> Str',     'Validated | Enriched -> *'),
     };
 }
 
