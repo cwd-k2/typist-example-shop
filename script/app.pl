@@ -466,7 +466,7 @@ handle {
 
     Shop::Infra::Display::section("Rank-2: Polymorphic Transform");
 
-    my $identity = sub ($x) { $x };
+    my $identity :sig(forall A. (A) -> A) = sub ($x) { $x };
     my $all_orders = Shop::Domain::Order::all_orders();
     my $transformed = Shop::Feature::Report::transform_all($identity, $all_orders);
     Shop::Infra::Display::info("transform_all(identity, orders): " . scalar(@$transformed) . " orders unchanged");
