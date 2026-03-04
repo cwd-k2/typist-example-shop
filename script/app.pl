@@ -51,10 +51,9 @@ use Shop::Feature::Classify;
 #  invariant state annotation, contract composition.
 # ═══════════════════════════════════════════════════
 
-handle {
+# ── Business Scenario ────────────────────────────
 
-    Shop::Infra::Display::banner("A Day at the Shop");
-
+sub morning_setup {
     # ── Morning Setup (08:00) ─────────────────
 
     Shop::Infra::Display::section("08:00  Morning Setup");
@@ -98,6 +97,10 @@ handle {
 
     Shop::Infra::Display::section_end();
 
+    return ($alice, $alice_disc);
+}
+
+sub alice_order ($alice_disc) {
     # ── 10:00  Alice's Order ──────────────────
 
     Shop::Infra::Display::section("10:00  Alice's Order");
@@ -132,6 +135,10 @@ handle {
 
     Shop::Infra::Display::section_end();
 
+    return $alice_items;
+}
+
+sub bob_order {
     # ── 11:30  Bob's Order ────────────────────
 
     Shop::Infra::Display::section("11:30  Bob's Order");
@@ -187,7 +194,9 @@ handle {
         Err => sub ($e) { Shop::Infra::Display::error_msg("Order #3 failed: $e") };
 
     Shop::Infra::Display::section_end();
+}
 
+sub charlie_order {
     # ── 14:00  Charlie's Order ────────────────
 
     Shop::Infra::Display::section("14:00  Charlie's Order");
@@ -227,7 +236,9 @@ handle {
         Err => sub ($e) { Shop::Infra::Display::error_msg("Order #4 failed: $e") };
 
     Shop::Infra::Display::section_end();
+}
 
+sub alice_refund {
     # ── 15:00  Alice's Refund ─────────────────
 
     Shop::Infra::Display::section("15:00  Alice's Refund");
@@ -243,7 +254,9 @@ handle {
         Err => sub ($e)      { Shop::Infra::Display::error_msg("Refund #2 failed: $e") };
 
     Shop::Infra::Display::section_end();
+}
 
+sub stock_check {
     # ── 16:00  Stock Check ────────────────────
 
     Shop::Infra::Display::section("16:00  Stock Check");
@@ -259,7 +272,9 @@ handle {
         None => sub ()   { Shop::Infra::Display::error_msg("Widget not found") };
 
     Shop::Infra::Display::section_end();
+}
 
+sub end_of_day_report {
     # ── 17:00  End of Day Report ──────────────
 
     Shop::Infra::Display::section("17:00  End of Day Report");
@@ -268,7 +283,11 @@ handle {
     Shop::Infra::Display::info(Shop::Feature::Report::format_report($report, 0));
 
     Shop::Infra::Display::section_end();
+}
 
+# ── Analysis ─────────────────────────────────────
+
+sub inventory_analysis {
     # ── 18:00  Inventory Analysis ─────────────
     #
     #  Functor  — lift extraction into a container
@@ -327,6 +346,10 @@ handle {
 
     Shop::Infra::Display::section_end();
 
+    return $all_products;
+}
+
+sub night_audit ($all_products) {
     # ── 19:00  Night Audit ────────────────────
     #
     #  Natural Transformation — ArrayRef ~> Option
@@ -393,7 +416,9 @@ handle {
     Shop::Infra::Display::kv("mjoin([[1,2],[3],[4,5,6]])", "[" . join(", ", @$flat_audit) . "]");
 
     Shop::Infra::Display::section_end();
+}
 
+sub closing_summary ($alice_items, $alice_disc, $all_products) {
     # ── 19:30  Closing Summary ──────────────────
     #
     #  Bounded quantification, bounded generic struct,
@@ -453,7 +478,11 @@ handle {
     Shop::Infra::Display::kv("describe({a => 1})", Shop::Feature::Summary::describe_value({a => 1}));
 
     Shop::Infra::Display::section_end();
+}
 
+# ── Feature Demos ────────────────────────────────
+
+sub demo_gadt_events {
     # ── GADT: Shop Events ─────────────────────
 
     Shop::Infra::Display::section("GADT: Shop Events");
@@ -474,7 +503,9 @@ handle {
     Shop::Infra::Display::kv("Stock check (Gizmo)", "$stock_qty remaining");
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_rank2_transform {
     # ── Rank-2: Polymorphic Transform ─────────
 
     Shop::Infra::Display::section("Rank-2: Polymorphic Transform");
@@ -485,7 +516,9 @@ handle {
     Shop::Infra::Display::info("transform_all(identity, orders): " . scalar(@$transformed) . " orders unchanged");
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_typeclass_showcase {
     # ── TypeClass Showcase ────────────────────
 
     Shop::Infra::Display::section("TypeClass Showcase");
@@ -495,12 +528,15 @@ handle {
     Shop::Infra::Display::kv("Summarize(6545)",    Summarize::summarize(6545));
     Shop::Infra::Display::kv("Summarize('hello')", Summarize::summarize("hello"));
 
+    my $order1_opt = Shop::Domain::Order::find_order(OrderId(1));
     match $order1_opt,
         Some => sub ($o1) { Shop::Infra::Display::kv("Order summary", Shop::Domain::Order::summarize_order($o1)) },
         None => sub ()    { };
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_protocol_checkout {
     # ── Protocol: Register Checkout ───────────
 
     Shop::Infra::Display::section("Protocol: Register Checkout");
@@ -529,7 +565,9 @@ handle {
     Shop::Infra::Display::kv("Checkout total", "\$$checkout_total");
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_validation {
     # ── 20:00  Validation (累積エラー) ────────
 
     Shop::Infra::Display::section("20:00  Validation (Accumulating Errors)");
@@ -570,7 +608,9 @@ handle {
     Shop::Infra::Display::kv("validation_to_result", Shop::FP::HKT::show_result($back_to_result));
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_reader {
     # ── 20:30  Reader (設定注入) ──────────────
 
     Shop::Infra::Display::section("20:30  Reader (Environment Injection)");
@@ -619,7 +659,9 @@ handle {
     Shop::Infra::Display::kv("Formatted price", $formatted);
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_state {
     # ── 21:00  State (純粋カート積み上げ) ────
 
     Shop::Infra::Display::section("21:00  State (Pure Cart Accumulation)");
@@ -654,7 +696,9 @@ handle {
     Shop::Infra::Display::kv("Item count", "" . $final_cart->item_count);
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_writer ($alice_items, $alice_disc) {
     # ── 21:30  Writer (価格監査証跡) ──────────
 
     Shop::Infra::Display::section("21:30  Writer (Price Audit Trail)");
@@ -693,7 +737,9 @@ handle {
     }
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_traversable {
     # ── 22:00  Traversable (バッチ処理) ───────
 
     Shop::Infra::Display::section("22:00  Traversable (Batch Processing)");
@@ -756,7 +802,9 @@ handle {
     Shop::Infra::Display::kv("lift_a2(+, Err, Ok 200)", Shop::FP::HKT::show_result($combined_err));
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_typeclass_hierarchy {
     # ── 22:30  Typeclass Hierarchy & Constraints ──
 
     Shop::Infra::Display::section("22:30  Typeclass Hierarchy & Constraints");
@@ -787,17 +835,22 @@ handle {
     match $gadget_opt,
         Some => sub ($p) { Shop::Infra::Display::info("Convertible: " . Shop::Feature::Classify::convert_product($p)) },
         None => sub ()   { };
+
+    my $order1_opt = Shop::Domain::Order::find_order(OrderId(1));
     match $order1_opt,
         Some => sub ($o1) { Shop::Infra::Display::info("Convertible: " . Shop::Feature::Classify::convert_order($o1)) },
         None => sub ()    { };
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_type_narrowing ($alice) {
     # ── 23:00  Type Narrowing Patterns ─────────
 
     Shop::Infra::Display::section("23:00  Type Narrowing Patterns");
 
     # isa narrowing: Product | Customer → narrowed by isa
+    my $widget_opt2 = Shop::Domain::Inventory::find_product(ProductId("WIDGET"));
     my $widget_for_isa;
     match $widget_opt2,
         Some => sub ($p) { $widget_for_isa = $p },
@@ -817,20 +870,26 @@ handle {
     Shop::Infra::Display::kv("require(Gizmo)", Shop::Feature::Summary::require_product_name($gizmo_for_narrow));
 
     Shop::Infra::Display::section_end();
+}
 
+# declare: external function type declaration
+declare format_currency => '(Int) -> Str';
+sub format_currency :sig((Int) -> Str) ($amount) {
+    "\$" . int($amount / 100) . "." . sprintf("%02d", $amount % 100);
+}
+
+# Never: bottom type — function that never returns
+sub unreachable :sig(() -> Never) () { die "unreachable" }
+
+sub demo_advanced_patterns {
     # ── 23:30  Advanced Patterns ───────────────
 
     Shop::Infra::Display::section("23:30  Advanced Patterns");
 
     # declare: external function type declaration
-    declare format_currency => '(Int) -> Str';
-    sub format_currency :sig((Int) -> Str) ($amount) {
-        "\$" . int($amount / 100) . "." . sprintf("%02d", $amount % 100);
-    }
     Shop::Infra::Display::kv("format_currency(15999)", format_currency(15999));
 
     # Never: bottom type — function that never returns
-    sub unreachable :sig(() -> Never) () { die "unreachable" }
     Shop::Infra::Display::info("Never type: unreachable() declared (not called)");
 
     # Nested handlers: inner handler shadows outer
@@ -866,7 +925,9 @@ handle {
     Shop::Infra::Display::kv("Json", "native Perl data with :sig(Json)");
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_multi_param_generics {
     # ── 00:30  Multi-Param Generics ───────────
 
     Shop::Infra::Display::section("00:30  Multi-Param Generics");
@@ -891,7 +952,9 @@ handle {
         Shop::Feature::Summary::in_price_band(8000, $band) ? "yes" : "no");
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_type_annotations ($all_products, $alice) {
     # ── 01:00  Type Annotation Extensions ─────
 
     Shop::Infra::Display::section("01:00  Type Annotation Extensions");
@@ -908,6 +971,7 @@ handle {
     Shop::Infra::Display::kv("format_item_record", $record_str);
 
     # Struct Printable dispatch
+    my $widget_opt2 = Shop::Domain::Inventory::find_product(ProductId("WIDGET"));
     match $widget_opt2,
         Some => sub ($p) { Shop::Infra::Display::kv("display(Product)", Shop::Feature::Classify::display_product($p)) },
         None => sub ()   { };
@@ -926,12 +990,15 @@ handle {
     match $widget_opt2,
         Some => sub ($p) { Shop::Infra::Display::kv("stock_level(Widget)", "" . Shop::Feature::Summary::stock_level($p)) },
         None => sub ()   { };
+    my $gizmo_opt2 = Shop::Domain::Inventory::find_product(ProductId("GIZMO"));
     match $gizmo_opt2,
         Some => sub ($p) { Shop::Infra::Display::kv("stock_level(Gizmo)", "" . Shop::Feature::Summary::stock_level($p)) },
         None => sub ()   { };
 
     Shop::Infra::Display::section_end();
+}
 
+sub demo_protocol_pipeline {
     # ── 01:30  Protocol: Contracts & Superposition ─
     #
     #  Set-based transitions, state superposition,
@@ -982,12 +1049,14 @@ handle {
     # ── Invariant: Pipeline<Validated> (state preserved)
     #    peek() requires Validated and guarantees Validated.
     #    Observation without state mutation — the protocol invariant.
-    my $invariant_result = handle {
-        Shop::Feature::Pipeline::ingest_and_validate("Gizmo Z|9000|3");
-        my $snap = Shop::Feature::Pipeline::peek();
-        Shop::Infra::Display::info("  peek (invariant): $snap");
-        Shop::Feature::Pipeline::peek();  # idempotent — still Validated
-    } Pipeline => $make_pipeline->();
+    my $invariant_result = (sub {
+        handle {
+            Shop::Feature::Pipeline::ingest_and_validate("Gizmo Z|9000|3");
+            my $snap = Shop::Feature::Pipeline::peek();
+            Shop::Infra::Display::info("  peek (invariant): $snap");
+            Shop::Feature::Pipeline::peek();  # idempotent — still Validated
+        } Pipeline => $make_pipeline->();
+    })->();
     Shop::Infra::Display::kv("Invariant peek x2", $invariant_result);
 
     # ── Contract composition: postcondition → precondition chain
@@ -1027,6 +1096,44 @@ handle {
     }
 
     Shop::Infra::Display::section_end();
+}
+
+# ── Main ─────────────────────────────────────────
+
+handle {
+
+    Shop::Infra::Display::banner("A Day at the Shop");
+
+    # ── Business Scenario ──
+    my ($alice, $alice_disc) = morning_setup();
+    my $alice_items          = alice_order($alice_disc);
+    bob_order();
+    charlie_order();
+    alice_refund();
+    stock_check();
+    end_of_day_report();
+
+    # ── Analysis ──
+    my $all_products = inventory_analysis();
+    night_audit($all_products);
+    closing_summary($alice_items, $alice_disc, $all_products);
+
+    # ── Feature Demos ──
+    demo_gadt_events();
+    demo_rank2_transform();
+    demo_typeclass_showcase();
+    demo_protocol_checkout();
+    demo_validation();
+    demo_reader();
+    demo_state();
+    demo_writer($alice_items, $alice_disc);
+    demo_traversable();
+    demo_typeclass_hierarchy();
+    demo_type_narrowing($alice);
+    demo_advanced_patterns();
+    demo_multi_param_generics();
+    demo_type_annotations($all_products, $alice);
+    demo_protocol_pipeline();
 
     Shop::Infra::Display::banner("Shop Closed");
 

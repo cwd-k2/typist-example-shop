@@ -80,6 +80,20 @@ pass with **0 diagnostics** and **0 `@typist-ignore` suppressions**.
 | `Store::*_handler` (4) | Returns `+{...}` HashRef — no HashRef type in `:sig()` |
 | `Display::logger_handler` | Same — returns handler HashRef |
 
+### Named Function Context Issues (2)
+
+Typist's analysis behaves differently for named functions vs anonymous subs.
+These issues surfaced when extracting sections from the main `handle { ... }`
+block (anonymous sub) into named subroutines.
+
+| Issue | Trigger | Workaround |
+|---|---|---|
+| `:sig()` misattribution | `sub foo :sig(...) (...)` defined inside a named function causes Typist to associate the `:sig()` with the **enclosing** function, producing ArityMismatch / TypeMismatch | Move the inner `sub` definition to package level (outside the enclosing function). Named subs are package-scoped in Perl regardless of textual placement. |
+| Protocol scope leak | A `handle { ... } Protocol => ...` block that intentionally ends at a non-ground state (e.g. invariant `peek()` ending at `Validated`) triggers ProtocolMismatch inside a named function but not inside an anonymous sub | Wrap the handle block in `(sub { ... })->()` to restore the anonymous-sub context that suppresses the check. |
+
+Neither issue affects runtime behaviour — the program executes correctly.
+The errors are static-analysis diagnostics only.
+
 ### Resolved Upstream Issues
 
 The following limitations were present in earlier typist versions and are now resolved:
