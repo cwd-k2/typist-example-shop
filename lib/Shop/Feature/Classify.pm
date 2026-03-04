@@ -40,19 +40,17 @@ sub display_sorted :sig(<T: Printable + Ord>(ArrayRef[T]) -> Str) ($items) {
     join(", ", map { Printable::display($_) } @$sorted);
 }
 
-# ── Multi-param typeclass: concrete conversion ──
+# ── Multi-param typeclass: direct dispatch ───
 #
-# Convertible[T, U] dispatch requires both type parameters at
-# the call site; the second parameter (U) cannot be inferred
-# from a single argument.  Concrete wrappers call through the
-# typeclass dispatch, fixing U = Str.
+# Convertible[T, U] now supports prefix matching: convert(T) -> U
+# resolves to the unique instance whose first parameter matches T.
 
 sub convert_product :sig((Product) -> Str) ($p) {
-    $p->name . " (\$" . $p->price . ")";
+    Convertible::convert($p);
 }
 
 sub convert_order :sig((Order) -> Str) ($o) {
-    "Order #" . $o->id->base . " total=\$" . $o->total;
+    Convertible::convert($o);
 }
 
 1;

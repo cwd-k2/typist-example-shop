@@ -88,20 +88,7 @@ The following limitations were present in earlier typist versions and are now re
 - **Struct runtime inference**: `Inference::infer_value` recognizes blessed structs by their nominal type
 - **Recursive type alias inference**: `:sig(CategoryTree)` and `:sig(Json)` variable annotations now work with literal initializers
 - **Record <: HashRef subtyping**: hash literal records are now recognized as subtypes of `HashRef[Str, V]`
-
-### Remaining Upstream Issues
-
-#### Multi-parameter typeclass: second parameter inference
-
-Multi-parameter typeclass dispatch (e.g., `Convertible[Product, Str]`)
-requires both type parameters at the call site. The second parameter `U`
-cannot be inferred from a single argument — analogous to Haskell's need
-for functional dependencies or type applications.
-
-| | |
-|---|---|
-| **Ideal** | `Convertible::convert($product)` dispatching with `U = Str` |
-| **Workaround** | Concrete wrappers `convert_product`/`convert_order` (`Classify.pm`) |
+- **Multi-parameter typeclass prefix matching**: `Convertible::convert($product)` resolves to the unique instance matching `T` (`Classify.pm`)
 
 ### Tuple Types
 
