@@ -20,7 +20,7 @@ BEGIN {
         open_reg => [ '() -> Void', protocol('Idle -> Scanning') ],
         pay      => [ '(PaymentMethod) -> Bool', protocol('Scanning -> Paying') ],
         complete => [ '() -> Price', protocol('Paying -> Done') ],
-      };
+    };
 }
 
 # ── Session Operations ────────────────────────
