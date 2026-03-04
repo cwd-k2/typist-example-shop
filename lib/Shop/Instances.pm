@@ -62,4 +62,15 @@ BEGIN {
     };
 }
 
+# ── Printable for struct types ───────────────
+
+BEGIN {
+    instance Printable => 'Product', +{
+        display => sub ($p) { $p->name . " (\$" . $p->price . ")" },
+    };
+    instance Printable => 'Customer', +{
+        display => sub ($c) { $c->name . " <" . $c->email . ">" },
+    };
+}
+
 1;

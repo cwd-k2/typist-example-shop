@@ -102,4 +102,38 @@ sub require_product_name :sig((Product) -> Str) ($product) {
     "Product: " . $product->name . " — " . $product->description;
 }
 
+# ── HashRef[Str, Int] in :sig() ───────────
+
+sub price_index :sig((ArrayRef[Product]) -> HashRef[Str, Int]) ($products) {
+    my %index;
+    for my $p (@$products) {
+        $index{$p->name} = $p->price;
+    }
+    \%index;
+}
+
+# ── Inline Record in :sig() (probe) ──────
+
+sub format_item_record :sig((Record(name => Str, qty => Int, price => Int)) -> Str) ($item) {
+    $item->{name} . " x" . $item->{qty} . " @ \$" . $item->{price};
+}
+
+# ── PriceBand (Tuple field) ──────────────
+
+sub make_price_band :sig((Str, Price, Price) -> PriceBand) ($name, $lo, $hi) {
+    PriceBand(name => $name, bounds => [$lo, $hi]);
+}
+
+sub in_price_band :sig((Price, PriceBand) -> Bool) ($price, $band) {
+    my ($lo, $hi) = @{$band->bounds};
+    $price >= $lo && $price <= $hi;
+}
+
+# ── Literal union return (probe) ─────────
+
+sub stock_level :sig((Product) -> 0 | 1 | 2) ($product) {
+    my $s = $product->stock;
+    $s == 0 ? 0 : $s < 10 ? 1 : 2;
+}
+
 1;

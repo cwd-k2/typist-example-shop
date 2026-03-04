@@ -53,4 +53,23 @@ sub convert_order :sig((Order) -> Str) ($o) {
     Convertible::convert($o);
 }
 
+# ── Struct Printable instance dispatch ─────
+
+sub display_product :sig((Product) -> Str) ($p) { Printable::display($p) }
+sub display_customer :sig((Customer) -> Str) ($c) { Printable::display($c) }
+
+# ── Labeled[T: Printable] — monomorphic (T=Int) ──
+
+sub display_labeled :sig((Labeled[Int]) -> Str) ($l) {
+    $l->label . " = " . Printable::display($l->value);
+}
+
+# ── Wildcard match (P1 probe) ─────────────
+
+sub describe_payment :sig((PaymentMethod) -> Str) ($method) {
+    match $method,
+        Cash => sub ()       { "cash payment" },
+        _    => sub (@args)  { "non-cash payment" };
+}
+
 1;

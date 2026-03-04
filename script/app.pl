@@ -40,7 +40,12 @@ use Shop::Feature::Classify;
 #  typeclass superclass hierarchy,
 #  multi-parameter typeclass, recursive type aliases,
 #  isa narrowing, early return narrowing,
-#  declare, Never, nested handlers.
+#  declare, Never, nested handlers,
+#  multi-param generic struct (Pair[A,B]),
+#  typeclass-bounded struct (Labeled[T: Printable]),
+#  Tuple in struct fields, HashRef[Str,Int] in :sig(),
+#  inline Record in :sig(), literal union return,
+#  struct Printable instances.
 # ═══════════════════════════════════════════════════
 
 handle {
@@ -856,6 +861,71 @@ handle {
         meta  => +{ active => 1 },
     };
     Shop::Infra::Display::kv("Json", "native Perl data with :sig(Json)");
+
+    Shop::Infra::Display::section_end();
+
+    # ── 00:30  Multi-Param Generics ───────────
+
+    Shop::Infra::Display::section("00:30  Multi-Param Generics");
+
+    # Pair[A, B] — 2-parameter generic struct
+    my $pair_ss = Pair(fst => "color", snd => "blue");
+    Shop::Infra::Display::kv("Pair[Str,Str]", $pair_ss->fst . " = " . $pair_ss->snd);
+
+    my $pair_si = Pair(fst => "weight", snd => 150);
+    Shop::Infra::Display::kv("Pair[Str,Int]", $pair_si->fst . " = " . $pair_si->snd);
+
+    # Labeled[T: Printable] — typeclass-bounded generic struct
+    my $labeled_int = Labeled(label => "unit_price", value => 1500);
+    Shop::Infra::Display::kv("Labeled[Int]", Shop::Feature::Classify::display_labeled($labeled_int));
+
+    # PriceBand — struct with Tuple[Price, Price] field
+    my $band = Shop::Feature::Summary::make_price_band("mid-range", 1000, 5000);
+    Shop::Infra::Display::kv("PriceBand", $band->name . " [" . $band->bounds->[0] . ", " . $band->bounds->[1] . "]");
+    Shop::Infra::Display::kv("1500 in band?",
+        Shop::Feature::Summary::in_price_band(1500, $band) ? "yes" : "no");
+    Shop::Infra::Display::kv("8000 in band?",
+        Shop::Feature::Summary::in_price_band(8000, $band) ? "yes" : "no");
+
+    Shop::Infra::Display::section_end();
+
+    # ── 01:00  Type Annotation Extensions ─────
+
+    Shop::Infra::Display::section("01:00  Type Annotation Extensions");
+
+    # HashRef[Str, Int] in :sig()
+    my $p_index = Shop::Feature::Summary::price_index($all_products);
+    my @idx_entries = map { "$_=\$$p_index->{$_}" } sort keys %$p_index;
+    Shop::Infra::Display::kv("price_index", join(", ", @idx_entries));
+
+    # Inline Record in :sig()
+    my $record_str = Shop::Feature::Summary::format_item_record(
+        +{ name => "Widget", qty => 3, price => 1500 },
+    );
+    Shop::Infra::Display::kv("format_item_record", $record_str);
+
+    # Struct Printable dispatch
+    match $widget_opt2,
+        Some => sub ($p) { Shop::Infra::Display::kv("display(Product)", Shop::Feature::Classify::display_product($p)) },
+        None => sub ()   { };
+    Shop::Infra::Display::kv("display(Customer)", Shop::Feature::Classify::display_customer($alice));
+
+    # Wildcard match (P1 probe): _ default arm
+    Shop::Infra::Display::kv("describe(Cash)", Shop::Feature::Classify::describe_payment(Cash()));
+    Shop::Infra::Display::kv("describe(Card)", Shop::Feature::Classify::describe_payment(Card("1234")));
+
+    # Bounded forall (P2 probe): forall A: Num. (A) -> A
+    my $num_id :sig(forall A: Num. (A) -> A) = sub ($x) { $x };
+    Shop::Infra::Display::kv("bounded forall(42)", "" . $num_id->(42));
+    Shop::Infra::Display::kv("bounded forall(3.14)", "" . $num_id->(3.14));
+
+    # Literal union return
+    match $widget_opt2,
+        Some => sub ($p) { Shop::Infra::Display::kv("stock_level(Widget)", "" . Shop::Feature::Summary::stock_level($p)) },
+        None => sub ()   { };
+    match $gizmo_opt2,
+        Some => sub ($p) { Shop::Infra::Display::kv("stock_level(Gizmo)", "" . Shop::Feature::Summary::stock_level($p)) },
+        None => sub ()   { };
 
     Shop::Infra::Display::section_end();
 

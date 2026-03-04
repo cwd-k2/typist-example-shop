@@ -17,6 +17,7 @@ our @EXPORT = qw(
   LogEntry
   Valid Invalid
   Range
+  Pair Labeled PriceBand
 );
 
 # ── Newtypes ──────────────────────────────────
@@ -234,5 +235,17 @@ BEGIN {
     typedef CategoryTree => 'Str | ArrayRef[CategoryTree]';
     typedef Json         => 'Str | Int | Double | Bool | Undef | ArrayRef[Json] | HashRef[Str, Json]';
 }
+
+# ── Multi-parameter Generic Struct ───────────
+
+BEGIN { struct 'Pair[A, B]' => (fst => 'A', snd => 'B') }
+
+# ── Typeclass-Bounded Generic Struct ─────────
+
+BEGIN { struct 'Labeled[T: Printable]' => (label => Str, value => 'T') }
+
+# ── Struct with Tuple-typed Field ─────────────
+
+BEGIN { struct PriceBand => (name => Str, bounds => 'Tuple[Price, Price]') }
 
 1;
