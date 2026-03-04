@@ -3,7 +3,7 @@ use v5.40;
 use Typist;
 use Shop::Types;
 use Shop::Domain::Order;
-use Shop::Func::HKT;
+use Shop::FP::HKT;
 
 # ═══════════════════════════════════════════════════
 #  Report — Daily report generation and analytics
@@ -76,7 +76,7 @@ sub build_daily_report :sig(() -> ReportNode[Int] ![Logger, OrderStore]) () {
 
 # HKT integration: filter for revenue orders
 sub revenue_orders :sig((ArrayRef[Order]) -> ArrayRef[Order]) ($orders) {
-    Shop::Func::HKT::filter($orders, sub ($o) {
+    Shop::FP::HKT::filter($orders, sub ($o) {
         match $o->status,
             Confirmed => sub          { 1 },
             Fulfilled => sub          { 1 },

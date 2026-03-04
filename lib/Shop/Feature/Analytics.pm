@@ -2,7 +2,7 @@ package Shop::Feature::Analytics;
 use v5.40;
 use Typist 'Int', 'Str';
 use Shop::Types;
-use Shop::Func::HKT;
+use Shop::FP::HKT;
 
 use Exporter 'import';
 our @EXPORT = ();
@@ -59,7 +59,7 @@ sub find_or_error :sig((ArrayRef[Product], ProductId) -> Result[Product]) ($prod
 # HKT: Functor::fmap + fold_sum
 sub total_value :sig((ArrayRef[Product]) -> Int) ($products) {
     my $values = Functor::fmap($products, sub ($p) { $p->price * $p->stock });
-    Shop::Func::HKT::fold_sum($values);
+    Shop::FP::HKT::fold_sum($values);
 }
 
 # HKT: Functor::fmap for projection
@@ -70,7 +70,7 @@ sub product_prices :sig((ArrayRef[Product]) -> ArrayRef[Int]) ($products) {
 # HKT: cat_results for filtering
 sub filter_valid :sig(<A>(ArrayRef[A], (A) -> Result[A]) -> ArrayRef[A]) ($items, $validate) {
     my $results = Functor::fmap($items, $validate);
-    Shop::Func::HKT::cat_results($results);
+    Shop::FP::HKT::cat_results($results);
 }
 
 # ── Statistics ───────────────────────────────────

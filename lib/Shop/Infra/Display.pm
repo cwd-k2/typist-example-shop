@@ -89,6 +89,15 @@ sub blank :sig(() -> Void ![IO]) () {
     say "";
 }
 
+# ── Variadic display ─────────────────────────
+
+sub labeled_list :sig((Str, ...Str) -> Void ![IO]) ($title, @items) {
+    say "  " . _bold($title);
+    for my $item (@items) {
+        say "    - $item";
+    }
+}
+
 # ── Log display ──────────────────────────────
 
 my %LEVEL_COLOR = (

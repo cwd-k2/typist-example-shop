@@ -4,7 +4,7 @@ use Typist;
 use Shop::Types;
 use Shop::Domain::Inventory;
 use Shop::Domain::Pricing;
-use Shop::Func::HKT;
+use Shop::FP::HKT;
 
 # ═══════════════════════════════════════════════════
 #  Order — Order lifecycle management
@@ -120,7 +120,7 @@ sub summarize_order :sig((Order) -> Str) ($order) {
 
 # HKT integration: cat_results for batch processing
 sub process_results :sig((ArrayRef[Result[Order]]) -> ArrayRef[Order] ![Logger]) ($results) {
-    my $ok_orders = Shop::Func::HKT::cat_results($results);
+    my $ok_orders = Shop::FP::HKT::cat_results($results);
     # Log skipped errors
     for my $r (@$results) {
         match $r,

@@ -2,7 +2,7 @@ package Shop::Domain::Customer;
 use v5.40;
 use Typist 'Str', 'Undef';
 use Shop::Types;
-use Shop::Func::HKT;
+use Shop::FP::HKT;
 
 # ═══════════════════════════════════════════════════
 #  Customer — Registration and tier management

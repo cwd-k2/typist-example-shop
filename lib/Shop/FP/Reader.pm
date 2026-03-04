@@ -1,4 +1,4 @@
-package Shop::Func::Reader;
+package Shop::FP::Reader;
 use v5.40;
 use Typist 'Int', 'Str';
 use Shop::Types;

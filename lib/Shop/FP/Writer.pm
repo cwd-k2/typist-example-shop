@@ -1,4 +1,4 @@
-package Shop::Func::Writer;
+package Shop::FP::Writer;
 use v5.40;
 use Typist 'Int', 'Str';
 use Shop::Types;

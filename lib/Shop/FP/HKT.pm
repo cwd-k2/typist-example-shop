@@ -1,4 +1,4 @@
-package Shop::Func::HKT;
+package Shop::FP::HKT;
 use v5.40;
 use Typist 'Int', 'Str';
 use Shop::Types;
@@ -120,12 +120,12 @@ BEGIN {
 
     # Bare namespace aliases for ergonomic use
     no strict 'refs';
-    *{"Functor::fmap"}           = \&Shop::Func::HKT::Functor::fmap;
-    *{"Foldable::foldr"}         = \&Shop::Func::HKT::Foldable::foldr;
-    *{"Monad::bind"}             = \&Shop::Func::HKT::Monad::bind;
-    *{"Applicative::pure"}       = \&Shop::Func::HKT::Applicative::pure;
-    *{"Applicative::ap"}         = \&Shop::Func::HKT::Applicative::ap;
-    *{"Traversable::traverse"}   = \&Shop::Func::HKT::Traversable::traverse;
+    *{"Functor::fmap"}           = \&Shop::FP::HKT::Functor::fmap;
+    *{"Foldable::foldr"}         = \&Shop::FP::HKT::Foldable::foldr;
+    *{"Monad::bind"}             = \&Shop::FP::HKT::Monad::bind;
+    *{"Applicative::pure"}       = \&Shop::FP::HKT::Applicative::pure;
+    *{"Applicative::ap"}         = \&Shop::FP::HKT::Applicative::ap;
+    *{"Traversable::traverse"}   = \&Shop::FP::HKT::Traversable::traverse;
 }
 
 # Canonical dispatch aliases

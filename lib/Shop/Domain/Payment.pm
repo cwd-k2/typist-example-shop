@@ -2,7 +2,7 @@ package Shop::Domain::Payment;
 use v5.40;
 use Typist;
 use Shop::Types;
-use Shop::Func::HKT;
+use Shop::FP::HKT;
 
 # ═══════════════════════════════════════════════════
 #  Payment — Payment processing with effects

@@ -3,7 +3,7 @@ use v5.40;
 use Typist;
 use Shop::Types;
 use Shop::Domain::Inventory;
-use Shop::Func::HKT;
+use Shop::FP::HKT;
 
 # ═══════════════════════════════════════════════════
 #  Events — GADT event processing
@@ -25,8 +25,8 @@ sub process_refund_event :sig((Order, Price) -> Price) ($order, $amount) {
 
 sub process_stock_event :sig((ProductId) -> Quantity ![ProductStore]) ($product_id) {
     my $opt = Shop::Domain::Inventory::find_product($product_id);
-    Shop::Func::HKT::option_or(
-        Shop::Func::HKT::option_fmap($opt, sub ($p) { $p->stock }),
+    Shop::FP::HKT::option_or(
+        Shop::FP::HKT::option_fmap($opt, sub ($p) { $p->stock }),
         0,
     );
 }

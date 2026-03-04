@@ -1,4 +1,4 @@
-package Shop::Func::Validation;
+package Shop::FP::Validation;
 use v5.40;
 use Typist 'Str';
 use Shop::Types;

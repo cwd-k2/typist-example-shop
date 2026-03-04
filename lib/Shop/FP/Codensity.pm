@@ -1,8 +1,8 @@
-package Shop::Func::Codensity;
+package Shop::FP::Codensity;
 use v5.40;
 use Typist;
 use Shop::Types;
-use Shop::Func::HKT;
+use Shop::FP::HKT;
 
 # ═══════════════════════════════════════════════════
 #  Codensity — The continuation monad transform
@@ -45,7 +45,7 @@ sub lower_list :sig(<A>(forall R. (A -> ArrayRef[R]) -> ArrayRef[R]) -> ArrayRef
 # ── Option Specialization ─────────────────────
 
 sub lift_option :sig(<A>(Option[A]) -> forall R. (A -> Option[R]) -> Option[R]) ($opt) {
-    sub ($k) { Shop::Func::HKT::option_bind($opt, $k) };
+    sub ($k) { Shop::FP::HKT::option_bind($opt, $k) };
 }
 
 sub lower_option :sig(<A>(forall R. (A -> Option[R]) -> Option[R]) -> Option[A]) ($m) {

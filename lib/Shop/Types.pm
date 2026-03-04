@@ -15,8 +15,9 @@ our @EXPORT = qw(
   Some None
   Debug Info Warn Error
   LogEntry
-  Pair
+  Pair Triple
   Valid Invalid
+  Range
 );
 
 # ── Newtypes ──────────────────────────────────
@@ -130,11 +131,15 @@ BEGIN {
     );
 }
 
-# ── Pair (Tuple) ─────────────────────────────
+# ── Pair / Triple (Tuple Encoding) ───────────
 
 BEGIN {
     datatype 'Pair[A, B]' => (
         Pair => '(A, B)'
+    );
+
+    datatype 'Triple[A, B, C]' => (
+        Triple => '(A, B, C)'
     );
 }
 
@@ -145,6 +150,21 @@ BEGIN {
         Valid   => '(T)',
         Invalid => '(ArrayRef[E])'
     );
+}
+
+# ── Bounded Generic Struct ────────────────────
+
+BEGIN {
+    struct 'Range[T: Num]' => (lo => 'T', hi => 'T');
+}
+
+# ── Record Types & Intersection ──────────────
+
+BEGIN {
+    typedef ProductQuery => 'Record(min_price => Int, max_price => Int, in_stock? => Bool)';
+    typedef HasName      => 'Record(name => Str)';
+    typedef HasPrice     => 'Record(price => Int)';
+    typedef Displayable  => 'HasName & HasPrice';
 }
 
 # ── Effects ───────────────────────────────────

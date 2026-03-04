@@ -1,4 +1,4 @@
-package Shop::Func::State;
+package Shop::FP::State;
 use v5.40;
 use Typist 'Int', 'Str';
 use Shop::Types;

@@ -2,7 +2,7 @@ package Shop::Domain::Inventory;
 use v5.40;
 use Typist;
 use Shop::Types;
-use Shop::Func::HKT;
+use Shop::FP::HKT;
 
 # ═══════════════════════════════════════════════════
 #  Inventory — Product and stock management
@@ -24,8 +24,8 @@ sub find_product :sig((ProductId) -> Option[Product] ![ProductStore]) ($id) {
 
 sub in_stock :sig((ProductId, Quantity) -> Bool ![ProductStore]) ($id, $qty) {
     my $opt = ProductStore::get_product($id);
-    Shop::Func::HKT::option_or(
-        Shop::Func::HKT::option_fmap($opt, sub ($p) { my $s = $p->stock; $s >= $qty }),
+    Shop::FP::HKT::option_or(
+        Shop::FP::HKT::option_fmap($opt, sub ($p) { my $s = $p->stock; $s >= $qty }),
         0,
     );
 }
@@ -50,8 +50,8 @@ sub deduct_stock :sig((ProductId, Quantity) -> Result[Quantity] ![Logger, Produc
 
 sub restock :sig((ProductId, Quantity) -> Quantity ![Logger, ProductStore]) ($id, $qty) {
     my $opt = ProductStore::get_product($id);
-    Shop::Func::HKT::option_or(
-        Shop::Func::HKT::option_fmap($opt, sub ($product) {
+    Shop::FP::HKT::option_or(
+        Shop::FP::HKT::option_fmap($opt, sub ($product) {
             my $new_stock = $product->stock + $qty;
             ProductStore::put_product($product->with(stock => $new_stock));
             Logger::log(Info(), "Restocked $qty x " . $product->name . " (now: $new_stock)");
@@ -66,7 +66,7 @@ sub all_products :sig(() -> ArrayRef[Product] ![ProductStore]) () {
 }
 
 sub filter_products :sig(((Product) -> Bool, ArrayRef[Product]) -> ArrayRef[Product]) ($pred, $products) {
-    Shop::Func::HKT::filter($products, $pred);
+    Shop::FP::HKT::filter($products, $pred);
 }
 
 # HKT integration: Functor::fmap for projection
