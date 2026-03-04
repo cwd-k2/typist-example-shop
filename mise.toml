@@ -18,4 +18,4 @@ run = "perl -Ilocal/lib/perl5 -Ilib script/app.pl"
 
 [tasks.verify]
 description = "Verify types (0 diagnostics expected)"
-run = "perl -Ilocal/lib/perl5 -Ilib local/bin/typist-check lib/Shop/*.pm lib/Shop/**/*.pm"
+run = "perl -Ilocal/lib/perl5 -Ilib local/bin/typist-check lib/Shop/*.pm lib/Shop/**/*.pm script/app.pl"
