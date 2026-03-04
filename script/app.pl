@@ -872,24 +872,20 @@ sub demo_type_narrowing ($alice) {
     Shop::Infra::Display::section_end();
 }
 
-# declare: external function type declaration
-declare format_currency => '(Int) -> Str';
-sub format_currency :sig((Int) -> Str) ($amount) {
-    "\$" . int($amount / 100) . "." . sprintf("%02d", $amount % 100);
-}
-
-# Never: bottom type — function that never returns
-sub unreachable :sig(() -> Never) () { die "unreachable" }
-
 sub demo_advanced_patterns {
     # ── 23:30  Advanced Patterns ───────────────
 
     Shop::Infra::Display::section("23:30  Advanced Patterns");
 
     # declare: external function type declaration
+    declare format_currency => '(Int) -> Str';
+    sub format_currency :sig((Int) -> Str) ($amount) {
+        "\$" . int($amount / 100) . "." . sprintf("%02d", $amount % 100);
+    }
     Shop::Infra::Display::kv("format_currency(15999)", format_currency(15999));
 
     # Never: bottom type — function that never returns
+    sub unreachable :sig(() -> Never) () { die "unreachable" }
     Shop::Infra::Display::info("Never type: unreachable() declared (not called)");
 
     # Nested handlers: inner handler shadows outer
@@ -1049,14 +1045,12 @@ sub demo_protocol_pipeline {
     # ── Invariant: Pipeline<Validated> (state preserved)
     #    peek() requires Validated and guarantees Validated.
     #    Observation without state mutation — the protocol invariant.
-    my $invariant_result = (sub {
-        handle {
-            Shop::Feature::Pipeline::ingest_and_validate("Gizmo Z|9000|3");
-            my $snap = Shop::Feature::Pipeline::peek();
-            Shop::Infra::Display::info("  peek (invariant): $snap");
-            Shop::Feature::Pipeline::peek();  # idempotent — still Validated
-        } Pipeline => $make_pipeline->();
-    })->();
+    my $invariant_result = handle {
+        Shop::Feature::Pipeline::ingest_and_validate("Gizmo Z|9000|3");
+        my $snap = Shop::Feature::Pipeline::peek();
+        Shop::Infra::Display::info("  peek (invariant): $snap");
+        Shop::Feature::Pipeline::peek();  # idempotent — still Validated
+    } Pipeline => $make_pipeline->();
     Shop::Infra::Display::kv("Invariant peek x2", $invariant_result);
 
     # ── Contract composition: postcondition → precondition chain
