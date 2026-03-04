@@ -75,30 +75,7 @@ pass with **0 diagnostics** and **0 `@typist-ignore` suppressions**.
 
 ### Unannotated Functions (5)
 
-| Function | Reason |
-|---|---|
-| `Store::*_handler` (4) | Returns `+{...}` HashRef — no HashRef type in `:sig()` |
-| `Display::logger_handler` | Same — returns handler HashRef |
-
-### Resolved Upstream Issues
-
-The following limitations were present in earlier typist versions and are now resolved:
-
-- **Constraint conjunction** (`+` syntax): `<T: Printable + Ord>` compound constraints now work in `:sig()` (`Classify::display_sorted`)
-- **Struct runtime inference**: `Inference::infer_value` recognizes blessed structs by their nominal type
-- **Recursive type alias inference**: `:sig(CategoryTree)` and `:sig(Json)` variable annotations now work with literal initializers
-- **Record <: HashRef subtyping**: hash literal records are now recognized as subtypes of `HashRef[Str, V]`
-- **Multi-parameter typeclass prefix matching**: `Convertible::convert($product)` resolves to the unique instance matching `T` (`Classify.pm`)
-
-### Tuple Types
-
-`State S A` and `Writer W A` use `Tuple[A, S]` / `Tuple[A, ArrayRef[W]]`
-to thread state/log alongside values. `price_breakdown` returns
-`Tuple[Int, Int, Int]`.
-
-Array literals `[...]` are now inferred as `Tuple[T, ...]` when the element
-types are heterogeneous, making plain arrayrefs a natural encoding for
-fixed-size tuples.
-
-Reader (`Reader E A = E -> A`) is a plain function type and requires no
-tuple encoding.
+| Function                  | Reason                                                 |
+| ------------------------- | ------------------------------------------------------ |
+| `Store::*_handler` (4)    | Returns `+{...}` HashRef — no HashRef type in `:sig()` |
+| `Display::logger_handler` | Same — returns handler HashRef                         |
