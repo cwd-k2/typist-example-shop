@@ -31,7 +31,7 @@ sub log_section :sig(<A, r: Row>((Str) -> A ![r], Str) -> A ![Logger, r]) ($body
 sub price_breakdown :sig((ArrayRef[OrderItem], DiscountPct) -> Tuple[Int, Int, Int]) ($items, $pct) {
     my $subtotal :sig(Int) = Shop::Domain::Pricing::order_subtotal($items);
     my $final    :sig(Int) = Shop::Domain::Pricing::apply_discount($subtotal, $pct);
-    my $discount :sig(Int) = $subtotal - $final;
+    my $discount = $subtotal - $final;
     [$subtotal, $discount, $final];
 }
 
@@ -56,7 +56,7 @@ sub build_summary :sig((Int, Int) -> ProductQuery) ($min, $max) {
 # Range[T: Num] — constrain T to Num
 
 sub in_range :sig(<T: Num>(T, Range[T]) -> Bool) ($val, $range) {
-    if ($val >= $range->lo && $val <= $range->hi) { 1 } else { 0 }
+    $val >= $range->lo && $val <= $range->hi;
 }
 
 sub filter_by_price_range :sig((ArrayRef[Product], Range[Int]) -> ArrayRef[Product]) ($products, $range) {

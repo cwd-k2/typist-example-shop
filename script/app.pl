@@ -412,16 +412,10 @@ handle {
     # Bounded generic struct: Range[Int] + in_range
     my $price_range = Range(lo => 1000, hi => 5000);
     Shop::Infra::Display::kv("Range[Int]", "lo=" . $price_range->lo . ", hi=" . $price_range->hi);
-    if (Shop::Feature::Summary::in_range(1500, $price_range)) {
-        Shop::Infra::Display::kv("1500 in range?", "yes");
-    } else {
-        Shop::Infra::Display::kv("1500 in range?", "no");
-    }
-    if (Shop::Feature::Summary::in_range(8000, $price_range)) {
-        Shop::Infra::Display::kv("8000 in range?", "yes");
-    } else {
-        Shop::Infra::Display::kv("8000 in range?", "no");
-    }
+    Shop::Infra::Display::kv("1500 in range?",
+        Shop::Feature::Summary::in_range(1500, $price_range) ? "yes" : "no");
+    Shop::Infra::Display::kv("8000 in range?",
+        Shop::Feature::Summary::in_range(8000, $price_range) ? "yes" : "no");
 
     # Bounded generic struct: filter_by_price_range
     my $in_range_products = Shop::Feature::Summary::filter_by_price_range($all_products, $price_range);
