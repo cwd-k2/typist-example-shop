@@ -10,22 +10,22 @@ use Shop::Types;
 #  a strict lifecycle of scan -> pay -> complete.
 #
 #  State machine:
-#    Idle --scan--> Scanning --pay--> Paying --complete--> Done
-#                    ^--scan--/
+#    * --open--> Scanning --pay--> Paying --complete--> *
+#                 ^--scan--/
 # ═══════════════════════════════════════════════════
 
 BEGIN {
-    effect 'Register', [qw(Idle Scanning Paying Done)] => +{
+    effect 'Register', [qw(Scanning Paying)] => +{
         scan     => [ '(ProductId, Quantity) -> Void', protocol('Scanning -> Scanning') ],
-        open_reg => [ '() -> Void', protocol('Idle -> Scanning') ],
+        open_reg => [ '() -> Void', protocol('* -> Scanning') ],
         pay      => [ '(PaymentMethod) -> Bool', protocol('Scanning -> Paying') ],
-        complete => [ '() -> Price', protocol('Paying -> Done') ],
+        complete => [ '() -> Price', protocol('Paying -> *') ],
     };
 }
 
 # ── Session Operations ────────────────────────
 
-sub start_checkout :sig((ArrayRef[OrderItem]) -> Void ![Register<Idle -> Scanning>, Logger]) ($items) {
+sub start_checkout :sig((ArrayRef[OrderItem]) -> Void ![Register<* -> Scanning>, Logger]) ($items) {
     Register::open_reg();
     Logger::log(Info(), "Register opened");
 
@@ -35,7 +35,7 @@ sub start_checkout :sig((ArrayRef[OrderItem]) -> Void ![Register<Idle -> Scannin
     }
 }
 
-sub finalize_checkout :sig((PaymentMethod) -> Price ![Register<Scanning -> Done>, Logger]) ($method) {
+sub finalize_checkout :sig((PaymentMethod) -> Price ![Register<Scanning -> *>, Logger]) ($method) {
     my $ok = Register::pay($method);
     Logger::log(Info(), "Payment " . ( $ok ? "accepted" : "rejected" ));
 
@@ -44,7 +44,7 @@ sub finalize_checkout :sig((PaymentMethod) -> Price ![Register<Scanning -> Done>
     $total;
 }
 
-sub run_checkout :sig((ArrayRef[OrderItem], PaymentMethod) -> Price ![Register<Idle -> Done>, Logger]) ($items, $method) {
+sub run_checkout :sig((ArrayRef[OrderItem], PaymentMethod) -> Price ![Register, Logger]) ($items, $method) {
     start_checkout($items);
     finalize_checkout($method);
 }
