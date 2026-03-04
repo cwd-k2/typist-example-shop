@@ -15,6 +15,7 @@ use Shop::Feature::Events;
 use Shop::Feature::Checkout;
 use Shop::Feature::Analytics;
 use Shop::Feature::Summary;
+use Shop::Feature::Pipeline;
 use Shop::FP::HKT;
 use Shop::FP::Codensity;
 use Shop::FP::Validation;
@@ -45,7 +46,9 @@ use Shop::Feature::Classify;
 #  typeclass-bounded struct (Labeled[T: Printable]),
 #  Tuple in struct fields, HashRef[Str,Int] in :sig(),
 #  inline Record in :sig(), literal union return,
-#  struct Printable instances.
+#  struct Printable instances,
+#  protocol set-based transitions, state superposition,
+#  invariant state annotation, contract composition.
 # ═══════════════════════════════════════════════════
 
 handle {
@@ -926,6 +929,102 @@ handle {
     match $gizmo_opt2,
         Some => sub ($p) { Shop::Infra::Display::kv("stock_level(Gizmo)", "" . Shop::Feature::Summary::stock_level($p)) },
         None => sub ()   { };
+
+    Shop::Infra::Display::section_end();
+
+    # ── 01:30  Protocol: Contracts & Superposition ─
+    #
+    #  Set-based transitions, state superposition,
+    #  invariant annotation, contract composition.
+    #  Protocol as Design by Contract:
+    #    from-state = precondition
+    #    to-state   = postcondition
+    #    invariant  = same-state annotation
+
+    Shop::Infra::Display::section("01:30  Protocol: Contracts & Superposition");
+
+    # Handler: interprets Pipeline effect operations
+    my $make_pipeline = sub () {
+        my ($buf, $meta) = ("", "");
+        +{
+            ingest   => sub ($d) { $buf = $d; $meta = "" },
+            validate => sub ()   { length($buf) > 0 },
+            enrich   => sub ($m) { $meta = $m },
+            inspect  => sub ()   { "data='$buf'" . ($meta ? " meta='$meta'" : "") },
+            emit     => sub ()   {
+                my $r = $buf . ($meta ? " [$meta]" : "");
+                ($buf, $meta) = ("", "");
+                $r;
+            },
+        };
+    };
+
+    # ── Full pipeline: * -> Raw -> Validated -> Enriched -> *
+    my $full_result = handle {
+        Shop::Feature::Pipeline::run_full("Widget Pro|2500|50", "electronics");
+    } Pipeline => $make_pipeline->();
+    Shop::Infra::Display::kv("Full pipeline", $full_result);
+
+    # ── Superposition: conditional enrichment
+    #    if branch → Enriched, no-else fallthrough → Validated
+    #    merged state: Validated | Enriched
+    #    emit() accepts both via protocol('Validated | Enriched -> *')
+    my $with_enrich = handle {
+        Shop::Feature::Pipeline::process("Gadget X|5000|10", 1);
+    } Pipeline => $make_pipeline->();
+    Shop::Infra::Display::kv("Superposition (enriched)", $with_enrich);
+
+    my $without_enrich = handle {
+        Shop::Feature::Pipeline::process("Gadget X|5000|10", 0);
+    } Pipeline => $make_pipeline->();
+    Shop::Infra::Display::kv("Superposition (plain)", $without_enrich);
+
+    # ── Invariant: Pipeline<Validated> (state preserved)
+    #    peek() requires Validated and guarantees Validated.
+    #    Observation without state mutation — the protocol invariant.
+    my $invariant_result = handle {
+        Shop::Feature::Pipeline::ingest_and_validate("Gizmo Z|9000|3");
+        my $snap = Shop::Feature::Pipeline::peek();
+        Shop::Infra::Display::info("  peek (invariant): $snap");
+        Shop::Feature::Pipeline::peek();  # idempotent — still Validated
+    } Pipeline => $make_pipeline->();
+    Shop::Infra::Display::kv("Invariant peek x2", $invariant_result);
+
+    # ── Contract composition: postcondition → precondition chain
+    #    ingest_and_validate : * -> Validated   (establishes postcondition)
+    #    peek                : Validated         (invariant — no state change)
+    #    emit via emit()     : Validated -> *    (consumes, returns to ground)
+    my $composed_result = handle {
+        Shop::Feature::Pipeline::ingest_and_validate("Sensor|4200|8");
+        Shop::Feature::Pipeline::peek();              # invariant check
+        Pipeline::emit();                             # Validated -> *
+    } Pipeline => $make_pipeline->();
+    Shop::Infra::Display::kv("Composed (validate -> peek -> emit)", $composed_result);
+    Shop::Infra::Display::blank();
+
+    # ── Fail-fast contract handler ──────────────────
+    #    Protocol = compile-time contract (operation order)
+    #    Handler  = runtime contract      (data validity)
+    #    die      = non-local exit on violation
+
+    # Success: both layers satisfied
+    my $contract_ok = handle {
+        Shop::Feature::Pipeline::process("Widget|2500|50", 1);
+    } Pipeline => Shop::Feature::Pipeline::contract_handler();
+    Shop::Infra::Display::kv("Contract (pass)", $contract_ok);
+
+    # Failure: protocol OK (correct order), but handler asserts (bad data)
+    #   Protocol verified at compile time: process() calls ingest -> validate -> emit ✓
+    #   Handler fires at runtime: "bad data" has no pipe delimiter → die
+    my $contract_fail = eval {
+        handle {
+            Shop::Feature::Pipeline::process("bad data", 0);
+        } Pipeline => Shop::Feature::Pipeline::contract_handler();
+    };
+    if ($@) {
+        chomp(my $err = $@);
+        Shop::Infra::Display::error_msg("Contract (fail): $err");
+    }
 
     Shop::Infra::Display::section_end();
 
