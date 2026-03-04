@@ -766,6 +766,9 @@ handle {
     Shop::Infra::Display::kv("show_all(ints)", Shop::Feature::Classify::show_all([42, 7, 256], ", "));
     Shop::Infra::Display::kv("show_all(strs)", Shop::Feature::Classify::show_all(["hello", "world"], " | "));
 
+    # Compound constraint: Printable + Ord
+    Shop::Infra::Display::kv("display_sorted", Shop::Feature::Classify::display_sorted([256, 7, 42]));
+
     # Multi-param typeclass: Convertible dispatch (Product -> Str)
     my $widget_opt2 = Shop::Domain::Inventory::find_product(ProductId("WIDGET"));
     my $gadget_opt  = Shop::Domain::Inventory::find_product(ProductId("GADGET"));
@@ -842,9 +845,9 @@ handle {
     Shop::Infra::Display::kv("Inner handler", $inner_log);
     Shop::Infra::Display::blank();
 
-    # Recursive type aliases
-    my $tree = ["Electronics", ["Phones", "Tablets"], "Clothing"];
-    Shop::Infra::Display::kv("CategoryTree", "nested structure constructed");
+    # Recursive type aliases — now with :sig() annotations
+    my $tree :sig(CategoryTree) = ["Electronics", ["Phones", "Tablets"], "Clothing"];
+    Shop::Infra::Display::kv("CategoryTree", "nested structure with :sig(CategoryTree)");
 
     my $json = +{
         name  => "Widget",

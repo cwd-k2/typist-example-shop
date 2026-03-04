@@ -80,49 +80,38 @@ pass with **0 diagnostics** and **0 `@typist-ignore` suppressions**.
 | `Store::*_handler` (4) | Returns `+{...}` HashRef — no HashRef type in `:sig()` |
 | `Display::logger_handler` | Same — returns handler HashRef |
 
-### Typist Upstream Issues
+### Resolved Upstream Issues
 
-The following workarounds are applied due to current typist limitations.
+The following limitations were present in earlier typist versions and are now resolved:
 
-#### Constraint conjunction in bounds (`+` syntax)
+- **Constraint conjunction** (`+` syntax): `<T: Printable + Ord>` compound constraints now work in `:sig()` (`Classify::display_sorted`)
+- **Struct runtime inference**: `Inference::infer_value` recognizes blessed structs by their nominal type
+- **Recursive type alias inference**: `:sig(CategoryTree)` variable annotations now work with array literal initializers
 
-The bound expression parser does not accept `+` for combining multiple
-typeclass constraints on a single type variable.
+### Remaining Upstream Issues
 
-| | |
-|---|---|
-| **Ideal** | `sub display_sorted :sig(<T: Printable + Ord>(ArrayRef[T]) -> Str)` |
-| **Workaround** | Function removed; single-constraint signatures (`<T: Printable>`, `<T: Ord>`) are used instead |
-| **Root cause** | `Typist::Parser` rejects `+` as an unexpected character in bound expressions |
+#### Multi-parameter typeclass: second parameter inference
 
-#### Multi-parameter typeclass runtime dispatch on struct types
-
-Runtime instance resolution for multi-parameter typeclasses cannot
-dispatch on struct types. Structs are blessed hashrefs; the runtime
-resolves them as `HashRef[Any]` rather than the registered struct name,
-so instance lookup for e.g. `Convertible => 'Product, Str'` fails.
-Additionally, the second type parameter `U` cannot be inferred from
-the call site alone (analogous to Haskell's need for functional
-dependencies or type applications).
+Multi-parameter typeclass dispatch (e.g., `Convertible[Product, Str]`)
+requires both type parameters at the call site. The second parameter `U`
+cannot be inferred from a single argument — analogous to Haskell's need
+for functional dependencies or type applications.
 
 | | |
 |---|---|
-| **Ideal** | `sub convert_all :sig(<T>(ArrayRef[T]) -> ArrayRef[Str])` calling `Convertible::convert` with runtime dispatch |
-| **Workaround** | Concrete wrappers `convert_product`/`convert_order` that inline the conversion logic (`Classify.pm`). Typeclass and instance definitions are retained for static checking. |
-| **Root cause** | (1) Runtime type classifier maps blessed hashrefs to `HashRef[Any]` instead of their struct name; (2) multi-param dispatch requires caller-side type application or functional dependencies to resolve output type `U` |
+| **Ideal** | `Convertible::convert($product)` dispatching with `U = Str` |
+| **Workaround** | Concrete wrappers `convert_product`/`convert_order` (`Classify.pm`) |
 
-#### Recursive type alias inference for variable annotations
+#### Recursive type alias: hash literal variable annotation
 
-Variable annotations with recursive type aliases (`CategoryTree`,
-`Json`) fail at CHECK-time when the initializer is a plain Perl literal.
-The inference engine resolves the literal as `ArrayRef[Any]` or a
-concrete record type and rejects the annotation.
+`:sig(Json)` on hash literal initializers fails because `_infer_hash`
+does not extract `HashRef[K, V]` from Union expected types. Array
+literals (`CategoryTree`) are now supported.
 
 | | |
 |---|---|
-| **Ideal** | `my $tree :sig(CategoryTree) = ["Electronics", ["Phones", "Tablets"], "Clothing"]` |
-| **Workaround** | Omit `:sig()` annotation; the recursive typedef is still registered and available for use in function signatures |
-| **Root cause** | Literal inference does not attempt to unify against recursive type alias expansions |
+| **Ideal** | `my $json :sig(Json) = +{ name => "Widget", ... }` |
+| **Workaround** | Omit `:sig()` on hash literals; use `Json` in function signatures |
 
 ### Tuple Types
 

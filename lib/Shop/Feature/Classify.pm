@@ -33,10 +33,19 @@ sub max_by :sig(<T: Ord>(ArrayRef[T]) -> Option[T]) ($items) {
     Some($best);
 }
 
+# ── Compound constraint: Printable + Ord ─────
+
+sub display_sorted :sig(<T: Printable + Ord>(ArrayRef[T]) -> Str) ($items) {
+    my $sorted = [sort { Ord::compare($a, $b) } @$items];
+    join(", ", map { Printable::display($_) } @$sorted);
+}
+
 # ── Multi-param typeclass: concrete conversion ──
 #
-# Convertible[Product, Str] instance exercises the
-# static checker path; runtime uses direct dispatch.
+# Convertible[T, U] dispatch requires both type parameters at
+# the call site; the second parameter (U) cannot be inferred
+# from a single argument.  Concrete wrappers call through the
+# typeclass dispatch, fixing U = Str.
 
 sub convert_product :sig((Product) -> Str) ($p) {
     $p->name . " (\$" . $p->price . ")";
