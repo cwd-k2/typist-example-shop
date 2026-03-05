@@ -64,11 +64,11 @@ sub info :sig((Str) -> Void ![IO]) ($text) {
 }
 
 sub success :sig((Str) -> Void ![IO]) ($text) {
-    say "  " . _green("v") . " $text";
+    say "  " . _green("✓") . " $text";
 }
 
 sub error_msg :sig((Str) -> Void ![IO]) ($text) {
-    say "  " . _red("x") . " $text";
+    say "  " . _red("✗") . " $text";
 }
 
 sub warn_msg :sig((Str) -> Void ![IO]) ($text) {
@@ -126,7 +126,7 @@ sub log_line :sig((LogLevel, Str) -> Void ![IO]) ($level, $msg) {
     my $name   = _level_name($level);
     my $tag    = $LEVEL_TAG{$name};
     my $color  = $LEVEL_COLOR{$name};
-    say "  " . $color->("[${tag}]") . " $msg";
+    say "  " . _dim("│") . " " . $color->("[${tag}]") . " " . _dim($msg);
 }
 
 sub log_entry_line :sig((LogEntry) -> Void ![IO]) ($entry) {
@@ -134,7 +134,7 @@ sub log_entry_line :sig((LogEntry) -> Void ![IO]) ($entry) {
     my $tag    = $LEVEL_TAG{$name};
     my $color  = $LEVEL_COLOR{$name};
     my $source = defined($entry->source) ? _dim(" (" . $entry->source . ")") : "";
-    say "  " . $color->("[${tag}]") . " " . $entry->message . $source;
+    say "  " . _dim("│") . " " . $color->("[${tag}]") . " " . _dim($entry->message) . $source;
 }
 
 # ── Logger handler factory ───────────────────
