@@ -26,7 +26,7 @@ sub build_daily_report :sig(() -> ReportNode[Int] ![Logger, OrderStore]) () {
     my @order_nodes;
 
     for my $order (@$orders) {
-        my $order_key = $order->id->base;
+        my $order_key = OrderId::coerce($order->id);
         my $value     = $order->total;
 
         my $label = match $order->status,

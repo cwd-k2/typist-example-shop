@@ -82,7 +82,7 @@ sub subtotal_with_audit :sig((ArrayRef[OrderItem]) -> Tuple[Price, ArrayRef[Str]
     for my $item (@$items) {
         my $line = $item->unit_price * $item->quantity;
         $total += $line;
-        push @$log, "  " . $item->product_id->base . " x" . $item->quantity . " @ \$" . $item->unit_price . " = \$$line";
+        push @$log, "  " . ProductId::coerce($item->product_id) . " x" . $item->quantity . " @ \$" . $item->unit_price . " = \$$line";
     }
     [$total, $log];
 }

@@ -338,7 +338,7 @@ sub inventory_analysis {
 
     my $restock_plan = Monad::bind($restock_pids, sub ($pid) {
         Monad::bind($restock_qtys, sub ($qty) {
-            [ $pid->base . " x$qty" ];
+            [ ProductId::coerce($pid) . " x$qty" ];
         });
     });
     Shop::Infra::Display::info("Restock candidates:");
@@ -394,7 +394,7 @@ sub night_audit ($all_products) {
     Shop::Infra::Display::info("Kleisli (find -> classify):");
     for my $pid (ProductId("WIDGET"), ProductId("GADGET"), ProductId("GIZMO")) {
         my $r = $find_and_classify->($pid);
-        Shop::Infra::Display::kv("  " . $pid->base, "" . $r->[0]);
+        Shop::Infra::Display::kv("  " . ProductId::coerce($pid), "" . $r->[0]);
     }
 
     # Codensity: right-associate bind chains via CPS
@@ -550,7 +550,7 @@ sub demo_protocol_checkout {
         Shop::Feature::Checkout::run_checkout($checkout_items, Cash());
     } Register => +{
         open_reg => sub ()           { Shop::Infra::Display::info("[reg] Register opened") },
-        scan     => sub ($pid, $qty) { Shop::Infra::Display::info("[reg] Scan: " . $pid->base . " x$qty") },
+        scan     => sub ($pid, $qty) { Shop::Infra::Display::info("[reg] Scan: " . ProductId::coerce($pid) . " x$qty") },
         pay      => sub ($method)    { Shop::Infra::Display::info("[reg] Processing payment..."); 1 },
         complete => sub ()           {
             my $sum = 0;
@@ -645,7 +645,7 @@ sub demo_reader {
     # local: temporarily override config
     my $high_tax_total = Shop::FP::Reader::run_reader(
         Shop::FP::Reader::local(
-            sub ($cfg) { $cfg->with(tax_rate => 20) },
+            sub ($cfg) { ShopConfig::update($cfg, tax_rate => 20) },
             Shop::FP::Reader::price_with_tax(1500),
         ),
         $config,
@@ -760,7 +760,7 @@ sub demo_traversable {
             my $opt = Shop::Domain::Inventory::find_product($pid);
             match $opt,
                 Some => sub ($p) { Ok($p->name . ": \$" . $p->price) },
-                None => sub ()   { Err("Not found: " . $pid->base) };
+                None => sub ()   { Err("Not found: " . ProductId::coerce($pid)) };
         },
     );
     Shop::Infra::Display::kv("traverse products", Shop::FP::HKT::show_result(
@@ -774,7 +774,7 @@ sub demo_traversable {
             my $opt = Shop::Domain::Inventory::find_product($pid);
             match $opt,
                 Some => sub ($p) { Ok($p->name) },
-                None => sub ()   { Err("Not found: " . $pid->base) };
+                None => sub ()   { Err("Not found: " . ProductId::coerce($pid)) };
         },
     );
     Shop::Infra::Display::kv("traverse w/ missing", Shop::FP::HKT::show_result($with_missing));

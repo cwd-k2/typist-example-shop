@@ -33,9 +33,9 @@ sub process_stock_event :sig((ProductId) -> Quantity ![ProductStore]) ($product_
 
 sub describe_event :sig((ShopEvent[Price]) -> Str) ($event) {
     match $event,
-        Sale       => sub ($order)          { "Sale: order #" . $order->id->base . " total " . $order->total },
-        Refund     => sub ($order, $amount) { "Refund: order #" . $order->id->base . " amount " . $amount },
-        StockCheck => sub ($pid)            { "StockCheck: " . $pid->base };
+        Sale       => sub ($order)          { "Sale: order #" . OrderId::coerce($order->id) . " total " . $order->total },
+        Refund     => sub ($order, $amount) { "Refund: order #" . OrderId::coerce($order->id) . " amount " . $amount },
+        StockCheck => sub ($pid)            { "StockCheck: " . ProductId::coerce($pid) };
 }
 
 1;

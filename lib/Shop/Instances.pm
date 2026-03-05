@@ -58,7 +58,7 @@ BEGIN {
         convert => sub ($p) { $p->name . " (\$" . $p->price . ")" },
     };
     instance Convertible => 'Order, Str', +{
-        convert => sub ($o) { "Order #" . $o->id->base . " total=\$" . $o->total },
+        convert => sub ($o) { "Order #" . OrderId::coerce($o->id) . " total=\$" . $o->total },
     };
 }
 

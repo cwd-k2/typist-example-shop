@@ -13,7 +13,7 @@ use Shop::FP::HKT;
 # ── Payment Processing ────────────────────────
 
 sub process_payment :sig((OrderId, Price, PaymentMethod) -> Result[PaymentStatus] ![Logger, PaymentGateway, PaymentStore]) ($order_id, $amount, $method) {
-    my $key = $order_id->base;
+    my $key = OrderId::coerce($order_id);
 
     my $desc = match $method,
         Cash     => sub ()           { "cash" },
@@ -38,7 +38,7 @@ sub process_payment :sig((OrderId, Price, PaymentMethod) -> Result[PaymentStatus
 # ── Refund Processing ─────────────────────────
 
 sub refund_payment :sig((OrderId, Price) -> Result[PaymentStatus] ![Logger, PaymentStore]) ($order_id, $amount) {
-    my $key = $order_id->base;
+    my $key = OrderId::coerce($order_id);
     my $opt = PaymentStore::get_payment($order_id);
 
     match $opt,

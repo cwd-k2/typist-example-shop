@@ -31,7 +31,7 @@ sub start_checkout :sig((ArrayRef[OrderItem]) -> Void ![Register<* -> Scanning>,
 
     for my $item ( $items->@* ) {
         Register::scan( $item->product_id, $item->quantity );
-        Logger::log(Debug(), "Scanned " . $item->product_id->base . " x" . $item->quantity);
+        Logger::log(Debug(), "Scanned " . ProductId::coerce($item->product_id) . " x" . $item->quantity);
     }
 }
 

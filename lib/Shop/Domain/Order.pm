@@ -29,7 +29,7 @@ sub create_order :sig((OrderId, CustomerId, ArrayRef[OrderItem], DiscountPct) ->
     );
 
     OrderStore::put_order($order);
-    Logger::log(Info(), "Order #" . $id->base . " created (subtotal: $subtotal, discount: $discount%, total: $total)");
+    Logger::log(Info(), "Order #" . OrderId::coerce($id) . " created (subtotal: $subtotal, discount: $discount%, total: $total)");
     Ok($order);
 }
 
@@ -39,7 +39,7 @@ sub confirm_order :sig((OrderId) -> Result[Order] ![Logger, OrderStore, ProductS
     my $opt = OrderStore::get_order($id);
     match $opt,
         Some => sub ($order) {
-            my $key = $id->base;
+            my $key = OrderId::coerce($id);
             for my $item ($order->items->@*) {
                 my $result = Shop::Domain::Inventory::deduct_stock($item->product_id, $item->quantity);
                 my $error;
@@ -47,14 +47,14 @@ sub confirm_order :sig((OrderId) -> Result[Order] ![Logger, OrderStore, ProductS
                     Err => sub ($msg) { $error = $msg },
                     Ok  => sub ($remaining) { };
                 if ($error) {
-                    my $cancelled = $order->with(status => Cancelled($error));
+                    my $cancelled = Order::update($order, status => Cancelled($error));
                     OrderStore::put_order($cancelled);
                     Logger::log(Warn(), "Order #$key cancelled: $error");
                     return Err($error);
                 }
             }
 
-            my $confirmed = $order->with(status => Confirmed());
+            my $confirmed = Order::update($order, status => Confirmed());
             OrderStore::put_order($confirmed);
             Logger::log(Info(), "Order #$key confirmed");
             Ok($confirmed);
@@ -70,8 +70,8 @@ sub fulfill_order :sig((OrderId) -> Result[Order] ![Logger, OrderStore]) ($id) {
     my $opt = OrderStore::get_order($id);
     match $opt,
         Some => sub ($order) {
-            my $key = $id->base;
-            my $fulfilled = $order->with(status => Fulfilled());
+            my $key = OrderId::coerce($id);
+            my $fulfilled = Order::update($order, status => Fulfilled());
             OrderStore::put_order($fulfilled);
             Logger::log(Info(), "Order #$key fulfilled");
             Ok($fulfilled);
@@ -87,8 +87,8 @@ sub cancel_order :sig((OrderId, Str) -> Result[Order] ![Logger, OrderStore]) ($i
     my $opt = OrderStore::get_order($id);
     match $opt,
         Some => sub ($order) {
-            my $key = $id->base;
-            my $cancelled = $order->with(status => Cancelled($reason));
+            my $key = OrderId::coerce($id);
+            my $cancelled = Order::update($order, status => Cancelled($reason));
             OrderStore::put_order($cancelled);
             Logger::log(Info(), "Order #$key cancelled: $reason");
             Ok($cancelled);
@@ -109,7 +109,7 @@ sub all_orders :sig(() -> ArrayRef[Order] ![OrderStore]) () {
 }
 
 sub summarize_order :sig((Order) -> Str) ($order) {
-    my $id = $order->id->base;
+    my $id = OrderId::coerce($order->id);
     my $status_str :sig(Str) = match $order->status,
         Created   => sub { "created" },
         Confirmed => sub { "confirmed" },

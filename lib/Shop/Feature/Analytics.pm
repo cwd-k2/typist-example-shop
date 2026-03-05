@@ -19,9 +19,9 @@ our @EXPORT = ();
 # ── Safe lookups (Option-returning wrappers) ─────
 
 sub safe_find :sig((ArrayRef[Product], ProductId) -> Option[Product]) ($products, $id) {
-    my $target = $id->base;
+    my $target = ProductId::coerce($id);
     for my $p (@$products) {
-        return Some($p) if $p->id->base eq $target;
+        return Some($p) if ProductId::coerce($p->id) eq $target;
     }
     None();
 }
@@ -51,7 +51,7 @@ sub validate_name :sig((Str) -> Result[Str]) ($name) {
 sub find_or_error :sig((ArrayRef[Product], ProductId) -> Result[Product]) ($products, $id) {
     match safe_find($products, $id),
         Some => sub ($p) { Ok($p) },
-        None => sub ()   { Err("Product not found: " . $id->base) };
+        None => sub ()   { Err("Product not found: " . ProductId::coerce($id)) };
 }
 
 # ── Aggregation (HKT patterns) ───────────────────
