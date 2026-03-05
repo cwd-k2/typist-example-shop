@@ -645,7 +645,7 @@ sub demo_reader {
     # local: temporarily override config
     my $high_tax_total = Shop::FP::Reader::run_reader(
         Shop::FP::Reader::local(
-            sub ($cfg) { ShopConfig::update($cfg, tax_rate => 20) },
+            sub ($cfg) { ShopConfig::derive($cfg, tax_rate => 20) },
             Shop::FP::Reader::price_with_tax(1500),
         ),
         $config,

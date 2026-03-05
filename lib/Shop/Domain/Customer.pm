@@ -35,7 +35,7 @@ sub upgrade_to_premium :sig((CustomerId, Int) -> Result[Customer] ![Logger, Cust
     my $opt = CustomerStore::get_customer($id);
     match $opt,
         Some => sub ($customer) {
-            my $upgraded = Customer::update($customer, tier => Premium($points));
+            my $upgraded = Customer::derive($customer, tier => Premium($points));
             CustomerStore::put_customer($upgraded);
             Logger::log(Info(), "Customer " . $upgraded->name . " upgraded to Premium ($points pts)");
             Ok($upgraded);

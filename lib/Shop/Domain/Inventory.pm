@@ -39,7 +39,7 @@ sub deduct_stock :sig((ProductId, Quantity) -> Result[Quantity] ![Logger, Produc
                 return Err("Insufficient stock for " . $product->name . " (need $qty, have " . $product->stock . ")");
             }
             my $new_stock = $product->stock - $qty;
-            ProductStore::put_product(Product::update($product, stock => $new_stock));
+            ProductStore::put_product(Product::derive($product, stock => $new_stock));
             Logger::log(Info(), "Deducted $qty x " . $product->name . " (remaining: $new_stock)");
             Ok($new_stock);
         },
@@ -53,7 +53,7 @@ sub restock :sig((ProductId, Quantity) -> Quantity ![Logger, ProductStore]) ($id
     Shop::FP::HKT::option_or(
         Shop::FP::HKT::option_fmap($opt, sub ($product) {
             my $new_stock = $product->stock + $qty;
-            ProductStore::put_product(Product::update($product, stock => $new_stock));
+            ProductStore::put_product(Product::derive($product, stock => $new_stock));
             Logger::log(Info(), "Restocked $qty x " . $product->name . " (now: $new_stock)");
             $new_stock;
         }),

@@ -47,14 +47,14 @@ sub confirm_order :sig((OrderId) -> Result[Order] ![Logger, OrderStore, ProductS
                     Err => sub ($msg) { $error = $msg },
                     Ok  => sub ($remaining) { };
                 if ($error) {
-                    my $cancelled = Order::update($order, status => Cancelled($error));
+                    my $cancelled = Order::derive($order, status => Cancelled($error));
                     OrderStore::put_order($cancelled);
                     Logger::log(Warn(), "Order #$key cancelled: $error");
                     return Err($error);
                 }
             }
 
-            my $confirmed = Order::update($order, status => Confirmed());
+            my $confirmed = Order::derive($order, status => Confirmed());
             OrderStore::put_order($confirmed);
             Logger::log(Info(), "Order #$key confirmed");
             Ok($confirmed);
@@ -71,7 +71,7 @@ sub fulfill_order :sig((OrderId) -> Result[Order] ![Logger, OrderStore]) ($id) {
     match $opt,
         Some => sub ($order) {
             my $key = OrderId::coerce($id);
-            my $fulfilled = Order::update($order, status => Fulfilled());
+            my $fulfilled = Order::derive($order, status => Fulfilled());
             OrderStore::put_order($fulfilled);
             Logger::log(Info(), "Order #$key fulfilled");
             Ok($fulfilled);
@@ -88,7 +88,7 @@ sub cancel_order :sig((OrderId, Str) -> Result[Order] ![Logger, OrderStore]) ($i
     match $opt,
         Some => sub ($order) {
             my $key = OrderId::coerce($id);
-            my $cancelled = Order::update($order, status => Cancelled($reason));
+            my $cancelled = Order::derive($order, status => Cancelled($reason));
             OrderStore::put_order($cancelled);
             Logger::log(Info(), "Order #$key cancelled: $reason");
             Ok($cancelled);
