@@ -48,7 +48,8 @@ use Shop::Feature::Classify;
 #  inline Record in :sig(), literal union return,
 #  struct Printable instances,
 #  protocol set-based transitions, state superposition,
-#  invariant state annotation, contract composition.
+#  invariant state annotation, contract composition,
+#  Exn handling (die → throw handler bridge).
 # ═══════════════════════════════════════════════════
 
 # ── Business Scenario ────────────────────────────
@@ -1068,7 +1069,7 @@ sub demo_protocol_pipeline {
     # ── Fail-fast contract handler ──────────────────
     #    Protocol = compile-time contract (operation order)
     #    Handler  = runtime contract      (data validity)
-    #    die      = non-local exit on violation
+    #    Exn      = exception recovery    (die → throw handler)
 
     # Success: both layers satisfied
     my $contract_ok = handle {
@@ -1079,15 +1080,14 @@ sub demo_protocol_pipeline {
     # Failure: protocol OK (correct order), but handler asserts (bad data)
     #   Protocol verified at compile time: process() calls ingest -> validate -> emit ✓
     #   Handler fires at runtime: "bad data" has no pipe delimiter → die
-    my $contract_fail = eval {
-        handle {
-            Shop::Feature::Pipeline::process("bad data", 0);
-        } Pipeline => Shop::Feature::Pipeline::contract_handler();
+    #   Exn handler catches die and provides recovery value
+    my $contract_fail = handle {
+        Shop::Feature::Pipeline::process("bad data", 0);
+    } Pipeline => Shop::Feature::Pipeline::contract_handler(),
+      Exn      => +{
+        throw => sub ($err) { chomp $err; "FAILED: $err" },
     };
-    if ($@) {
-        chomp(my $err = $@);
-        Shop::Infra::Display::error_msg("Contract (fail): $err");
-    }
+    Shop::Infra::Display::error_msg("Contract (fail): $contract_fail");
 
     Shop::Infra::Display::section_end();
 }
