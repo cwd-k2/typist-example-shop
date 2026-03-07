@@ -1,6 +1,7 @@
 package Shop::Types;
 use v5.40;
-use Typist 'Int', 'Str', 'optional';
+use Typist;
+use Typist::DSL qw(Int Str optional);
 
 use Exporter 'import';
 our @EXPORT = qw(
@@ -203,10 +204,6 @@ BEGIN {
         summarize => '(T) -> Str',
     };
 
-    # Bare namespace aliases for ergonomic use
-    no strict 'refs';
-    *{"Printable::display"}   = \&Shop::Types::Printable::display;
-    *{"Summarize::summarize"} = \&Shop::Types::Summarize::summarize;
 }
 
 # ── Typeclass Hierarchy ──────────────────────
@@ -215,9 +212,6 @@ BEGIN {
     typeclass Eq  => 'T',      +{ eq_     => '(T, T) -> Bool' };
     typeclass Ord => 'T: Eq',  +{ compare => '(T, T) -> Int'  };
 
-    no strict 'refs';
-    *{"Eq::eq_"}      = \&Shop::Types::Eq::eq_;
-    *{"Ord::compare"}  = \&Shop::Types::Ord::compare;
 }
 
 # ── Multi-parameter Typeclass ────────────────
@@ -225,8 +219,6 @@ BEGIN {
 BEGIN {
     typeclass Convertible => 'T, U', +{ convert => '(T) -> U' };
 
-    no strict 'refs';
-    *{"Convertible::convert"} = \&Shop::Types::Convertible::convert;
 }
 
 # ── Recursive Type Aliases ───────────────────

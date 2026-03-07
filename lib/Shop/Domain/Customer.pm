@@ -1,6 +1,6 @@
 package Shop::Domain::Customer;
 use v5.40;
-use Typist 'Str', 'Undef';
+use Typist;
 use Shop::Types;
 use Shop::FP::HKT;
 

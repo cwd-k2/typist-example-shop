@@ -1,6 +1,6 @@
 package Shop::Feature::Classify;
 use v5.40;
-use Typist 'Str';
+use Typist;
 use Shop::Types;
 
 # ═══════════════════════════════════════════════════

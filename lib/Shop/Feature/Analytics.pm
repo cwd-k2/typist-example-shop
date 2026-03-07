@@ -1,6 +1,6 @@
 package Shop::Feature::Analytics;
 use v5.40;
-use Typist 'Int', 'Str';
+use Typist;
 use Shop::Types;
 use Shop::FP::HKT;
 

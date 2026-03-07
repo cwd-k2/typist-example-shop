@@ -1,6 +1,6 @@
 package Shop::FP::Writer;
 use v5.40;
-use Typist 'Int', 'Str';
+use Typist;
 use Shop::Types;
 
 use Exporter 'import';

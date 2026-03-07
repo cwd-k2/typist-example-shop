@@ -1,6 +1,7 @@
 package Shop::FP::State;
 use v5.40;
-use Typist 'Int', 'Str';
+use Typist;
+use Typist::DSL qw(Int);
 use Shop::Types;
 
 use Exporter 'import';

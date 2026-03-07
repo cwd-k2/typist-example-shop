@@ -1,6 +1,7 @@
 package Shop::Instances;
 use v5.40;
-use Typist 'Int', 'Str';
+use Typist;
+use Typist::DSL qw(Int Str);
 use Shop::Types;
 
 # ═══════════════════════════════════════════════════
