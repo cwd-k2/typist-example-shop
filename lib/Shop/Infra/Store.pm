@@ -21,7 +21,7 @@ my %payments;
 
 # ── CustomerStore handler ────────────────────
 
-sub customer_handler  () {
+sub customer_handler :sig(() -> Handler[CustomerStore]) () {
     +{
         get_customer  => sub ($id) {
             my $key = CustomerId::coerce($id);
@@ -38,7 +38,7 @@ sub customer_handler  () {
 
 # ── ProductStore handler ─────────────────────
 
-sub product_handler  () {
+sub product_handler :sig(() -> Handler[ProductStore]) () {
     +{
         get_product  => sub ($id) {
             my $key = ProductId::coerce($id);
@@ -55,7 +55,7 @@ sub product_handler  () {
 
 # ── OrderStore handler ───────────────────────
 
-sub order_handler  () {
+sub order_handler :sig(() -> Handler[OrderStore]) () {
     +{
         get_order  => sub ($id) {
             my $key = OrderId::coerce($id);
@@ -72,7 +72,7 @@ sub order_handler  () {
 
 # ── PaymentStore handler ─────────────────────
 
-sub payment_handler  () {
+sub payment_handler :sig(() -> Handler[PaymentStore]) () {
     +{
         get_payment => sub ($id) {
             my $key = OrderId::coerce($id);

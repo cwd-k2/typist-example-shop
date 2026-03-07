@@ -90,7 +90,7 @@ sub run_full :sig((Str, Str) -> Str ![Pipeline, Logger]) ($data, $meta) {
 #   compile-time : structural contract  (operation sequence)
 #   runtime      : semantic contract    (data validity)
 
-sub contract_handler () {
+sub contract_handler :sig(() -> Handler[Pipeline]) () {
     my ($buf, $meta) = ("", "");
     +{
         ingest => sub ($d) {

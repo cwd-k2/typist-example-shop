@@ -139,7 +139,7 @@ sub log_entry_line :sig((LogEntry) -> Void ![IO]) ($entry) {
 
 # ── Logger handler factory ───────────────────
 
-sub logger_handler () {
+sub logger_handler :sig(() -> Handler[Logger]) () {
     +{
         log       => sub ($level, $msg)  { log_line($level, $msg) },
         log_entry => sub ($entry)        { log_entry_line($entry) },
