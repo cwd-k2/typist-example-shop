@@ -96,15 +96,17 @@ sub contract_handler :sig(() -> Handler[Pipeline]) () {
         ingest => sub ($d) {
             die "[contract] ingest: data must be non-empty\n" unless length($d);
             $buf = $d; $meta = "";
+            return;
         },
         validate => sub () {
             die "[contract] validate: malformed (expected pipe-delimited)\n"
                 unless $buf =~ /\|/;
-            1;
+            $buf =~ /\|/ ? 1 : 0;
         },
         enrich => sub ($m) {
             die "[contract] enrich: metadata must be non-empty\n" unless length($m);
             $meta = $m;
+            return;
         },
         inspect => sub () {
             "data='$buf'" . ($meta ? " meta='$meta'" : "");
