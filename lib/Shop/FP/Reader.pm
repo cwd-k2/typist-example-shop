@@ -1,7 +1,6 @@
 package Shop::FP::Reader;
 use v5.40;
 use Typist;
-use Typist::DSL qw(Int Str);
 use Shop::Types;
 
 use Exporter 'import';
@@ -20,9 +19,9 @@ our @EXPORT = ();
 
 BEGIN {
     struct ShopConfig => (
-        tax_rate                => Int,
+        tax_rate                => 'Int',
         free_shipping_threshold => 'Price',
-        default_currency        => Str,
+        default_currency        => 'Str',
     );
 }
 

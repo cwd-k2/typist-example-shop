@@ -1,7 +1,6 @@
 package Shop::FP::State;
 use v5.40;
 use Typist;
-use Typist::DSL qw(Int);
 use Shop::Types;
 
 use Exporter 'import';
@@ -21,7 +20,7 @@ BEGIN {
     struct CartState => (
         items         => 'ArrayRef[OrderItem]',
         running_total => 'Price',
-        item_count    => Int,
+        item_count    => 'Int',
     );
 }
 

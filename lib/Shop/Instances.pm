@@ -1,7 +1,6 @@
 package Shop::Instances;
 use v5.40;
 use Typist;
-use Typist::DSL qw(Int Str);
 use Shop::Types;
 
 # ═══════════════════════════════════════════════════
@@ -17,11 +16,11 @@ use Shop::Types;
 # ── Printable ────────────────────────────────────
 
 BEGIN {
-    instance Printable => Int, +{
+    instance Printable => 'Int', +{
         display => sub ($v) { "Int<$v>" },
     };
 
-    instance Printable => Str, +{
+    instance Printable => 'Str', +{
         display => sub ($v) { qq[Str<$v>] },
     };
 }
@@ -29,11 +28,11 @@ BEGIN {
 # ── Summarize ────────────────────────────────────
 
 BEGIN {
-    instance Summarize => Int, +{
+    instance Summarize => 'Int', +{
         summarize => sub ($v) { "numeric: $v" },
     };
 
-    instance Summarize => Str, +{
+    instance Summarize => 'Str', +{
         summarize => sub ($v) { "text: $v" },
     };
 }
@@ -41,15 +40,15 @@ BEGIN {
 # ── Eq ───────────────────────────────────────────
 
 BEGIN {
-    instance Eq => Int, +{ eq_ => sub ($a, $b) { $a == $b ? 1 : 0 } };
-    instance Eq => Str, +{ eq_ => sub ($a, $b) { $a eq $b ? 1 : 0 } };
+    instance Eq => 'Int', +{ eq_ => sub ($a, $b) { $a == $b ? 1 : 0 } };
+    instance Eq => 'Str', +{ eq_ => sub ($a, $b) { $a eq $b ? 1 : 0 } };
 }
 
 # ── Ord (superclass: Eq) ────────────────────────
 
 BEGIN {
-    instance Ord => Int, +{ compare => sub ($a, $b) { $a <=> $b } };
-    instance Ord => Str, +{ compare => sub ($a, $b) { $a cmp $b } };
+    instance Ord => 'Int', +{ compare => sub ($a, $b) { $a <=> $b } };
+    instance Ord => 'Str', +{ compare => sub ($a, $b) { $a cmp $b } };
 }
 
 # ── Convertible (multi-param) ────────────────────

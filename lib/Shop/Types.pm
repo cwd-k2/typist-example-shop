@@ -1,7 +1,6 @@
 package Shop::Types;
 use v5.40;
 use Typist;
-use Typist::DSL qw(Int Str optional);
 
 use Exporter 'import';
 our @EXPORT = qw(
@@ -24,16 +23,16 @@ our @EXPORT = qw(
 # ── Newtypes ──────────────────────────────────
 
 BEGIN {
-    newtype ProductId  => Str;
-    newtype OrderId    => Int;
-    newtype CustomerId => Int;
+    newtype ProductId  => 'Str';
+    newtype OrderId    => 'Int';
+    newtype CustomerId => 'Int';
 }
 
 # ── Type Aliases ──────────────────────────────
 
 BEGIN {
-    typedef Price    => Int;
-    typedef Quantity => Int;
+    typedef Price    => 'Int';
+    typedef Quantity => 'Int';
 
     typedef DiscountPct => '0 | 5 | 10 | 15 | 20';
 }
@@ -43,11 +42,11 @@ BEGIN {
 BEGIN {
     struct Product => (
         id          => 'ProductId',
-        name        => Str,
+        name        => 'Str',
         price       => 'Price',
         stock       => 'Quantity',
-        description => optional(Str),
-        category    => optional(Str),
+        optional(description => 'Str'),
+        optional(category    => 'Str'),
     );
 
     struct OrderItem => (
@@ -66,16 +65,16 @@ BEGIN {
     );
 
     struct 'ReportNode[T]' => (
-        label    => Str,
+        label    => 'Str',
         value    => 'T',
         children => 'ArrayRef[ReportNode[T]]',
     );
 
     struct Customer => (
         id    => 'CustomerId',
-        name  => Str,
-        email => Str,
-        phone => Str | 'Undef',
+        name  => 'Str',
+        email => 'Str',
+        phone => 'Str | Undef',
         tier  => 'CustomerTier',
     );
 }
@@ -127,8 +126,8 @@ BEGIN {
 
     struct LogEntry => (
         level   => 'LogLevel',
-        message => Str,
-        source  => optional(Str),
+        message => 'Str',
+        optional(source => 'Str'),
     );
 }
 
@@ -234,10 +233,10 @@ BEGIN { struct 'Pair[A, B]' => (fst => 'A', snd => 'B') }
 
 # ── Typeclass-Bounded Generic Struct ─────────
 
-BEGIN { struct 'Labeled[T: Printable]' => (label => Str, value => 'T') }
+BEGIN { struct 'Labeled[T: Printable]' => (label => 'Str', value => 'T') }
 
 # ── Struct with Tuple-typed Field ─────────────
 
-BEGIN { struct PriceBand => (name => Str, bounds => 'Tuple[Price, Price]') }
+BEGIN { struct PriceBand => (name => 'Str', bounds => 'Tuple[Price, Price]') }
 
 1;
