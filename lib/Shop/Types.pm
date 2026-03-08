@@ -163,7 +163,7 @@ BEGIN {
         log_entry => '(LogEntry) -> Void',
     };
 
-    effect PaymentGateway => +{ charge => '(Int, PaymentMethod) -> Bool', };
+    effect PaymentGateway => +{ charge => '(Int, PaymentMethod) -> Bool' };
 
     effect CustomerStore => +{
         get_customer  => '(CustomerId) -> Option[Customer]',
@@ -202,7 +202,6 @@ BEGIN {
     typeclass Summarize => 'T', +{
         summarize => '(T) -> Str',
     };
-
 }
 
 # ── Typeclass Hierarchy ──────────────────────
@@ -210,14 +209,12 @@ BEGIN {
 BEGIN {
     typeclass Eq  => 'T',      +{ eq_     => '(T, T) -> Bool' };
     typeclass Ord => 'T: Eq',  +{ compare => '(T, T) -> Int'  };
-
 }
 
 # ── Multi-parameter Typeclass ────────────────
 
 BEGIN {
     typeclass Convertible => 'T, U', +{ convert => '(T) -> U' };
-
 }
 
 # ── Recursive Type Aliases ───────────────────

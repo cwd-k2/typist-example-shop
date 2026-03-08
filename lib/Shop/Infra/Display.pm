@@ -22,12 +22,12 @@ sub _c :sig((Str, Str) -> Str) ($code, $text) {
     $NO_COLOR ? $text : "\e[${code}m${text}\e[0m";
 }
 
-sub _bold    :sig((Str) -> Str) ($t) { _c('1',    $t) }
-sub _dim     :sig((Str) -> Str) ($t) { _c('2',    $t) }
-sub _red     :sig((Str) -> Str) ($t) { _c('31',   $t) }
-sub _green   :sig((Str) -> Str) ($t) { _c('32',   $t) }
-sub _yellow  :sig((Str) -> Str) ($t) { _c('33',   $t) }
-sub _cyan    :sig((Str) -> Str) ($t) { _c('36',   $t) }
+sub _bold      :sig((Str) -> Str) ($t) { _c('1',    $t) }
+sub _dim       :sig((Str) -> Str) ($t) { _c('2',    $t) }
+sub _red       :sig((Str) -> Str) ($t) { _c('31',   $t) }
+sub _green     :sig((Str) -> Str) ($t) { _c('32',   $t) }
+sub _yellow    :sig((Str) -> Str) ($t) { _c('33',   $t) }
+sub _cyan      :sig((Str) -> Str) ($t) { _c('36',   $t) }
 sub _bold_cyan :sig((Str) -> Str) ($t) { _c('1;36', $t) }
 
 # ── Public display primitives ────────────────
@@ -59,34 +59,17 @@ sub section_end :sig(() -> Void ![IO]) () {
     say "";
 }
 
-sub info :sig((Str) -> Void ![IO]) ($text) {
-    say "  $text";
-}
-
-sub success :sig((Str) -> Void ![IO]) ($text) {
-    say "  " . _green("✓") . " $text";
-}
-
-sub error_msg :sig((Str) -> Void ![IO]) ($text) {
-    say "  " . _red("✗") . " $text";
-}
-
-sub warn_msg :sig((Str) -> Void ![IO]) ($text) {
-    say "  " . _yellow("!") . " $text";
-}
-
-sub kv :sig((Str, Str) -> Void ![IO]) ($key, $value) {
-    say "  " . _dim("$key: ") . $value;
-}
+sub info      :sig((Str) -> Void ![IO]) ($text)              { say "  $text" }
+sub success   :sig((Str) -> Void ![IO]) ($text)              { say "  " . _green("✓") . " $text" }
+sub error_msg :sig((Str) -> Void ![IO]) ($text)              { say "  " . _red("✗") . " $text" }
+sub warn_msg  :sig((Str) -> Void ![IO]) ($text)              { say "  " . _yellow("!") . " $text" }
+sub kv        :sig((Str, Str) -> Void ![IO]) ($key, $value)  { say "  " . _dim("$key: ") . $value }
+sub blank     :sig(() -> Void ![IO]) ()                       { say "" }
 
 sub list :sig((ArrayRef[Str]) -> Void ![IO]) ($items) {
     for my $item (@$items) {
         say "  - $item";
     }
-}
-
-sub blank :sig(() -> Void ![IO]) () {
-    say "";
 }
 
 # ── Variadic display ─────────────────────────
