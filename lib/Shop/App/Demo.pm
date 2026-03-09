@@ -15,6 +15,7 @@ use Shop::Feature::Classify;
 use Shop::Feature::Events;
 use Shop::Feature::Pipeline;
 use Shop::Feature::Report;
+use Shop::Feature::ScopedEffects;
 use Shop::Feature::Summary;
 use Shop::FP::HKT;
 use Shop::FP::Validation;
@@ -48,6 +49,7 @@ sub run_all ($alice, $alice_disc, $alice_items, $all_products) {
     demo_multi_param_generics();
     demo_type_annotations($all_products, $alice);
     demo_protocol_pipeline();
+    demo_scoped_effects();
 }
 
 # ── GADT: Shop Events ──────────────────────
@@ -593,6 +595,25 @@ sub demo_protocol_pipeline {
         throw => sub ($err) { chomp $err; "FAILED: $err" },
     };
     Shop::Infra::Display::error_msg("Contract (fail): $contract_fail");
+
+    Shop::Infra::Display::section_end();
+}
+
+# ── Scoped Effects ───────────────────────────
+
+sub demo_scoped_effects {
+    Shop::Infra::Display::section("Scoped Effects: Identity-Based Dispatch");
+
+    Shop::Infra::Display::info("── Per-category sales tracking ──");
+    Shop::Feature::ScopedEffects::run_category_tracking();
+
+    say "";
+    Shop::Infra::Display::info("── Mixed dispatch (scoped + name-based) ──");
+    Shop::Feature::ScopedEffects::run_mixed_dispatch();
+
+    say "";
+    Shop::Infra::Display::info("── Exception safety ──");
+    Shop::Feature::ScopedEffects::run_exception_safety();
 
     Shop::Infra::Display::section_end();
 }

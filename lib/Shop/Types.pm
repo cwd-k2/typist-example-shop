@@ -187,6 +187,13 @@ BEGIN {
         get_payment => '(OrderId) -> Option[PaymentStatus]',
         put_payment => '(OrderId, PaymentStatus) -> Void',
     };
+
+    # Parameterized effect for scoped capabilities
+    effect 'Accumulator[S]' => +{
+        read  => '() -> S',
+        add   => '(S) -> Void',
+        reset => '() -> Void',
+    };
 }
 
 # ── Type Classes ──────────────────────────────
