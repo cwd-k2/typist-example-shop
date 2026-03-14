@@ -14,7 +14,7 @@ use Shop::App::Demo;
 #
 #  Showcases the full breadth of Typist features:
 #    types    — newtype, typedef, struct, ADT, GADT,
-#               enum, literal, recursive, bounded,
+#               literal, recursive, bounded,
 #               rank-2, intersection, record, tuple
 #    effects  — effect/handle, protocol, row poly
 #    classes  — typeclass, instance, hierarchy, HKT

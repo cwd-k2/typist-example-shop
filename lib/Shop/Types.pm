@@ -100,7 +100,12 @@ BEGIN {
         Transfer => '(Str, Str)'
     );
 
-    enum PaymentStatus => qw(Pending Completed Failed Refunded);
+    datatype PaymentStatus => (
+        Pending   => '()',
+        Completed => '()',
+        Failed    => '()',
+        Refunded  => '()',
+    );
 
     datatype 'Option[T]' => (
         Some => '(T)',
@@ -122,7 +127,12 @@ BEGIN {
 # ── Log ───────────────────────────────────────
 
 BEGIN {
-    enum LogLevel => qw(Debug Info Warn Error);
+    datatype LogLevel => (
+        Debug => '()',
+        Info  => '()',
+        Warn  => '()',
+        Error => '()',
+    );
 
     struct LogEntry => (
         level   => 'LogLevel',
